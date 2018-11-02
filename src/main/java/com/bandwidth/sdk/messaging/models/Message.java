@@ -7,6 +7,7 @@ import org.immutables.value.Value.Immutable;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 @Immutable
 @JsonSerialize(as = ImmutableMessage.class)
@@ -15,7 +16,7 @@ public abstract class Message {
     public abstract String getId();
     public abstract String getTime();
     public abstract String getOwner();
-    public abstract Collection<String> getTo();
+    public abstract Set<String> getTo();
     public abstract String getFrom();
     public abstract String getText();
     public abstract String getApplicationId();
