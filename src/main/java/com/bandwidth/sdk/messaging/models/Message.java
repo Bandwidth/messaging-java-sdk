@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.immutables.value.Value.Immutable;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 @Immutable
@@ -15,11 +15,11 @@ public abstract class Message {
     public abstract String getId();
     public abstract String getTime();
     public abstract String getOwner();
-    public abstract List<String> getTo();
+    public abstract Collection<String> getTo();
     public abstract String getFrom();
     public abstract String getText();
     public abstract String getApplicationId();
-    public abstract Optional<List<String>> getMedia();
+    public abstract Optional<Collection<String>> getMedia();
     public abstract Optional<String> getTag();
     public abstract String getDirection();
     public abstract Integer getSegmentCount();
