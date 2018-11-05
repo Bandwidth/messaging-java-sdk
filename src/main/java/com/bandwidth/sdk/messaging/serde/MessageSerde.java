@@ -12,8 +12,8 @@ public class MessageSerde {
     public <T> T deserialize(String messageBody, Class<T> clazz) throws IOException {
         return mapper.readValue(messageBody, clazz);
     }
+
     public <T> String serialize(T objectToMap) throws IOException {
         return mapper.writeValueAsString(objectToMap);
     }
-
 }

@@ -3,6 +3,7 @@ package com.bandwidth.sdk.messaging.serde;
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
 import com.bandwidth.sdk.messaging.models.Message;
 
+
 import org.junit.Test;
 
 public class MessageSerdeTest {
@@ -21,12 +22,13 @@ public class MessageSerdeTest {
 
 
     @Test
-    public void testMessageSerde(){
+    public void testMessageSerde() {
         MessageSerde tmp = new MessageSerde();
         try {
             String test = tmp.serialize(message);
             tmp.deserialize(test, Message.class);
-        } catch (Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

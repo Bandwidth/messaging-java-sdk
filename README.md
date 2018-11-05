@@ -29,7 +29,26 @@ compile 'com.bandwidth.sdk:messaging:(put desired version here)'
 public class MyAwesomeBandwidthMessagingApp{
     
     public static void main(String[] args){
+        MessagingClient client = new MessagingClient(
+                "u-aeawj73oafil", // your UserID
+                "t-ayu44kfjhbf", // your api token
+                "soykuhkfalkjdf" // your api secret
+        );
+
+        Message message = client.sendMessage(SendMessageRequest.builder()
+                .from("+12223334444")
+                .addTo("+13334445555")
+                .addTo("+14445556666") // you can add multiple recipients (will be sent as group MMS)
+                .applicationId("a-a7o34uhflaifadsf")
+                .text("This is a test group MMS message")
+                .addMedia("http://example.com/MyMedia.jpg") // adding media is optional (will be sent as MMS)
+                .addMedia("http://example.com/OtherMedia.png")
+                .tag("An arbitrary value I will receive in associated callbacks")
+                .build()
+        );
         
+        //you can get information from the sent message
+        String messageId = message.getId();
     }
     
 }
