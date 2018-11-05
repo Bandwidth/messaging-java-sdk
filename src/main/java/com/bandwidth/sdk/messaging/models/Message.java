@@ -27,7 +27,13 @@ public abstract class Message {
     public abstract Integer getSegmentCount();
 
     @JsonIgnore
-    public Boolean isSms(){
+    public boolean isSms(){
         return getTo().size() == 1 && !getMedia().isPresent();
     }
+
+    @JsonIgnore
+    public boolean isMms(){
+        return !isSms();
+    }
+
 }

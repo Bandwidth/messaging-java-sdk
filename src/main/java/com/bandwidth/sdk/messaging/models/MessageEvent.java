@@ -23,4 +23,9 @@ public abstract class MessageEvent {
         return getMessage().isSms();
     }
 
+    @JsonIgnore
+    public boolean isMms(){
+        return !isSms();
+    }
+
 }
