@@ -1,11 +1,8 @@
 package com.bandwidth.sdk.messaging;
 
-import com.bandwidth.sdk.messaging.models.ImmutableSendMessageRequest;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.bandwidth.sdk.messaging.serde.MessageSerde;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -25,6 +22,7 @@ public class MessagingClient {
 
     /**
      * Credentials to access Bandwidth's Messaging V2 api
+     *
      * @param userId Ex: u-1a2b3c4d
      * @param token Ex: t-1a2b3c4d
      * @param secret Ex: a3947ouilar
@@ -32,8 +30,7 @@ public class MessagingClient {
 
     private final String userId;
     private final AsyncHttpClient httpClient;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new Jdk8Module());
+    private final MessageSerde messageSerde = new MessageSerde();
 
     public MessagingClient(String userId, String token, String secret) {
         this.userId = userId;
@@ -49,19 +46,19 @@ public class MessagingClient {
 
     /**
      * Send an SMS / MMS / or group MMS and wait for the response
-     * @param request
      *
+     * @param request
      * @return The message object (if successful)
      */
     public Message sendMessage(SendMessageRequest request) throws ExecutionException, InterruptedException, IOException {
         String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
         Response response = httpClient.preparePost(url)
-                .setBody(objectMapper.writeValueAsString(request))
+                .setBody(messageSerde.serialize(request))
                 .execute().toCompletableFuture().get();
 
         //TODO: currently assuming the request is successful here
         String responseBodyString = response.getResponseBody(StandardCharsets.UTF_8);
-        return objectMapper.readValue(responseBodyString, Message.class);
+        return messageSerde.deserialize(responseBodyString, Message.class);
     }
 
 }
