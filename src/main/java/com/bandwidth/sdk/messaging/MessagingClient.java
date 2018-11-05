@@ -1,5 +1,6 @@
 package com.bandwidth.sdk.messaging;
 
+import com.bandwidth.sdk.messaging.models.ImmutableSendMessageRequest;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
