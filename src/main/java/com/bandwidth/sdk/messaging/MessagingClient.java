@@ -58,7 +58,6 @@ public class MessagingClient {
      * @param request
      * @return A completable future that completes when the request completes, with the message object as the result
      */
-
     public CompletableFuture<Message> sendMessageAsync(SendMessageRequest request) {
         try {
             String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
