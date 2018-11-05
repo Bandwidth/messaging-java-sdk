@@ -20,6 +20,10 @@ public class MessagingClient {
 
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
 
+    private final String userId;
+    private final AsyncHttpClient httpClient;
+    private final MessageSerde messageSerde = new MessageSerde();
+
     /**
      * Credentials to access Bandwidth's Messaging V2 api
      *
@@ -27,11 +31,6 @@ public class MessagingClient {
      * @param token Ex: t-1a2b3c4d
      * @param secret Ex: a3947ouilar
      */
-
-    private final String userId;
-    private final AsyncHttpClient httpClient;
-    private final MessageSerde messageSerde = new MessageSerde();
-
     public MessagingClient(String userId, String token, String secret) {
         this.userId = userId;
 
