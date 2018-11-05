@@ -15,8 +15,7 @@ public class MessageConverter {
         return mapper.readValue(messageBody, ImmutableMessage.class);
     }
     public String serialize(ImmutableMessage messageEvent) throws IOException {
-        String tmp = mapper.writeValueAsString(messageEvent);
-        return tmp;
+        return mapper.writeValueAsString(messageEvent);
     }
 
 }
