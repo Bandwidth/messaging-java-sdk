@@ -25,7 +25,7 @@ public abstract class SendMessageRequest {
 
     public abstract List<String> getMedia();
 
-    public ImmutableSendMessageRequest.Builder builder() {
+    public static ImmutableSendMessageRequest.Builder builder() {
         return ImmutableSendMessageRequest.builder();
     }
 }
