@@ -19,7 +19,7 @@ public abstract class MessageEvent {
     public abstract Optional<String> getTo();
 
     @JsonIgnore
-    public Boolean isSms(){
+    public boolean isSms(){
         return getMessage().isSms();
     }
 
