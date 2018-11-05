@@ -1,5 +1,6 @@
 package com.bandwidth.sdk.messaging.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -24,4 +25,9 @@ public abstract class Message {
     public abstract Optional<String> getTag();
     public abstract String getDirection();
     public abstract Integer getSegmentCount();
+
+    @JsonIgnore
+    public Boolean isSms(){
+        return getTo().size() == 1 && !getMedia().isPresent();
+    }
 }
