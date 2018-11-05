@@ -4,7 +4,7 @@ import com.bandwidth.sdk.messaging.models.ImmutableMessage;
 
 import org.junit.Test;
 
-public class MessageConverterTest {
+public class MessageSerdeTest {
 
     private ImmutableMessage message = ImmutableMessage.builder()
                 .addTo("1")
@@ -21,7 +21,7 @@ public class MessageConverterTest {
 
     @Test
     public void testMessageSerde(){
-        MessageConverter tmp = new MessageConverter();
+        MessageSerde tmp = new MessageSerde();
         try {
             String test = tmp.serialize(message);
             tmp.deserialize(test);

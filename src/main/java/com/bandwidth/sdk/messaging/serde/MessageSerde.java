@@ -7,7 +7,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import java.io.IOException;
 
-public class MessageConverter {
+public class MessageSerde {
     private static final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new Jdk8Module());
 
