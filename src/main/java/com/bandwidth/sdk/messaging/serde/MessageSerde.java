@@ -1,7 +1,5 @@
 package com.bandwidth.sdk.messaging.serde;
 
-import com.bandwidth.sdk.messaging.models.ImmutableMessage;
-import com.bandwidth.sdk.messaging.models.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
@@ -11,11 +9,11 @@ public class MessageSerde {
     private static final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new Jdk8Module());
 
-    public Message deserialize(String messageBody) throws IOException {
-        return mapper.readValue(messageBody, ImmutableMessage.class);
+    public <T> T deserialize(String messageBody, Class<T> clazz) throws IOException {
+        return mapper.readValue(messageBody, clazz);
     }
-    public String serialize(ImmutableMessage messageEvent) throws IOException {
-        return mapper.writeValueAsString(messageEvent);
+    public <T> String serialize(T objectToMap) throws IOException {
+        return mapper.writeValueAsString(objectToMap);
     }
 
 }
