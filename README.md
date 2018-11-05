@@ -30,7 +30,7 @@ public class MyAwesomeBandwidthMessagingApp{
     
     public static void main(String[] args){
         MessagingClient client = new MessagingClient(
-                "u-aeawj73oafil", // your UserID
+                "u-aeawj73oafil", // your user id
                 "t-ayu44kfjhbf", // your api token
                 "soykuhkfalkjdf" // your api secret
         );
