@@ -15,4 +15,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'messaging-v2-java-sdk'
+rootProject.name = 'messaging-java-sdk'

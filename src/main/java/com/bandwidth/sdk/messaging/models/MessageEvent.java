@@ -1,5 +1,6 @@
 package com.bandwidth.sdk.messaging.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value.Immutable;
@@ -16,4 +17,15 @@ public abstract class MessageEvent {
     public abstract Message getMessage();
     public abstract Optional<Integer> getErrorCode();
     public abstract Optional<String> getTo();
+
+    @JsonIgnore
+    public boolean isSms(){
+        return getMessage().isSms();
+    }
+
+    @JsonIgnore
+    public boolean isMms(){
+        return !isSms();
+    }
+
 }
