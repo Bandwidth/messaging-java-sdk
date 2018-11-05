@@ -13,6 +13,9 @@ import java.util.Set;
 @JsonSerialize(as = ImmutableMessageEvent.class)
 @JsonDeserialize(as = ImmutableMessageEvent.class)
 public abstract class MessageEvent {
+
+    private static final String INCOMING_MESSAGE_TYPE = "message-received";
+
     public abstract String getType();
     public abstract String getTime();
     public abstract String getDescription();
@@ -23,7 +26,7 @@ public abstract class MessageEvent {
 
     @JsonIgnore
     public boolean isIncomingMessage(){
-        return getTo().isPresent();
+        return INCOMING_MESSAGE_TYPE.equals(getType());
     }
 
     @JsonIgnore
@@ -48,17 +51,13 @@ public abstract class MessageEvent {
 
     @JsonIgnore
     public Optional<MessageErrorTypes> getErrorType(){
-        Optional<MessageErrorTypes> errorType = Optional.empty();
-
-        if (getErrorCode().isPresent()){
-            Integer errorCode = getErrorCode().get();
+        return getErrorCode().map(errorCode -> {
             if (4000 <= errorCode && errorCode < 5000)
-                errorType = Optional.of(MessageErrorTypes.CLIENT);
+                return MessageErrorTypes.CLIENT;
             else if (5000 <= errorCode && errorCode < 6000)
-                errorType = Optional.of(MessageErrorTypes.SERVER);
-            else errorType = Optional.of(MessageErrorTypes.UNKNOWN);
-        }
-        return errorType;
+                return MessageErrorTypes.SERVER;
+            else return MessageErrorTypes.UNKNOWN;
+        });
     }
 
     @JsonIgnore
