@@ -9,7 +9,7 @@ import org.immutables.value.Value.Immutable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Immutable
 @JsonSerialize(as = ImmutableMessage.class)
@@ -39,12 +39,10 @@ public abstract class Message {
 
     @JsonIgnore
     public Set<String> getReplyNumbers(){
-        Set<String> toNumbers = new TreeSet<>();
-        getTo()
+        return getTo()
             .stream()
             .filter(number -> !getOwner().equals(number))
-            .forEach(number -> toNumbers.add(number));
-        return toNumbers;
+            .collect(Collectors.toSet());
     }
 
 }

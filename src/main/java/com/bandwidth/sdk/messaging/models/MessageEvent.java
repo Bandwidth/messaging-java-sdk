@@ -27,7 +27,7 @@ public abstract class MessageEvent {
     }
 
     @JsonIgnore
-    public boolean isDLR(){
+    public boolean isDeliveryReceipt(){
         return !isIncomingMessage();
     }
 
