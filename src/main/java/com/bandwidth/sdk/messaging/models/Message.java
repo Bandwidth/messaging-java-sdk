@@ -9,6 +9,7 @@ import org.immutables.value.Value.Immutable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Immutable
 @JsonSerialize(as = ImmutableMessage.class)
@@ -34,6 +35,14 @@ public abstract class Message {
     @JsonIgnore
     public boolean isMms(){
         return !isSms();
+    }
+
+    @JsonIgnore
+    public Set<String> getReplyNumbers(){
+        return getTo()
+            .stream()
+            .filter(number -> !getOwner().equals(number))
+            .collect(Collectors.toSet());
     }
 
 }
