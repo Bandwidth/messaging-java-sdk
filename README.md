@@ -7,15 +7,15 @@ Java SDK for [Bandwidth's V2 Messaging Platform](https://dev.bandwidth.com/v2-me
 ### Maven
 ```xml
 <dependency>
-    <groupId>com.bandwidth.sdk.messaging</groupId>
-    <artifactId>messaging-v2-sdk</artifactId>
+    <groupId>com.bandwidth.sdk</groupId>
+    <artifactId>messaging</artifactId>
     <version>(put desired version here)</version>
 </dependency>
 ```
 
 ### Gradle
 ```
-compile 'com.bandwidth.sdk.messaging:messaging-v2-sdk:(put desired version here)'
+compile 'com.bandwidth.sdk:messaging:(put desired version here)'
 ```
 
 
@@ -26,7 +26,7 @@ compile 'com.bandwidth.sdk.messaging:messaging-v2-sdk:(put desired version here)
 * [Bandwidth Developer Homepage](https://dev.bandwidth.com/)
 
 ```java
-public class MyCoolBandwidthV2MessagingApp{
+public class MyAwesomeBandwidthMessagingApp{
     
     public static void main(String[] args){
         
