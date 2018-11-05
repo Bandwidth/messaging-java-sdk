@@ -9,6 +9,7 @@ import org.immutables.value.Value.Immutable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Immutable
 @JsonSerialize(as = ImmutableMessage.class)
@@ -34,6 +35,16 @@ public abstract class Message {
     @JsonIgnore
     public boolean isMms(){
         return !isSms();
+    }
+
+    @JsonIgnore
+    public Set<String> getReplyNumbers(){
+        Set<String> toNumbers = new TreeSet<>();
+        getTo()
+            .stream()
+            .filter(number -> !getOwner().equals(number))
+            .forEach(number -> toNumbers.add(number));
+        return toNumbers;
     }
 
 }
