@@ -88,7 +88,7 @@ public class MessagingClient {
     }
 
     /**
-     * Uploads MMS media content. Max 65MB
+     * Uploads MMS media content.
      *
      * @param path Path to file to upload
      * @param fileName File name as you would like it to be uploaded
@@ -100,7 +100,7 @@ public class MessagingClient {
     }
 
     /**
-     * Uploads MMS media content. Max 65MB
+     * Uploads MMS media content.
      *
      * @param stream InputStream that contains the data to be sent
      * @param fileName File name as you would like it to be uploaded
@@ -112,7 +112,7 @@ public class MessagingClient {
     }
 
     /**
-     * Uploads MMS media content. Max 65MB
+     * Uploads MMS media content.
      *
      * @param byteArray byte array of the data to be sent
      * @param fileName File name as you would like it to be uploaded
@@ -123,7 +123,7 @@ public class MessagingClient {
     }
 
     /**
-     * Uploads MMS media content. Max 65MB
+     * Uploads MMS media content.
      *
      * @param byteArray byte array of the data to be sent
      * @param fileName File name as you would like it to be uploaded
