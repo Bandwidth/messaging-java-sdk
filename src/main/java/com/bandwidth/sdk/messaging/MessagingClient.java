@@ -187,7 +187,7 @@ public class MessagingClient {
 
     private <T> CompletableFuture<T> catchExceptions(Supplier<CompletableFuture<T>> supplier) {
         try{
-            supplier.get();
+            return supplier.get();
         }
         catch (MessagingException e) {
             CompletableFuture<T> future = new CompletableFuture<>();
