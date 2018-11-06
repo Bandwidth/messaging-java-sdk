@@ -15,13 +15,13 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class MessagingClient {
 
@@ -68,23 +68,20 @@ public class MessagingClient {
      * @return A completable future that completes when the request completes, with the message object as the result
      */
     public CompletableFuture<Message> sendMessageAsync(SendMessageRequest request) {
-        try {
-            String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
-            return httpClient.preparePost(url)
-                    .setBody(messageSerde.serialize(request))
-                    .execute()
-                    .toCompletableFuture()
-                    .thenApply((resp) -> {
-                        if (isSuccessfulStatusCode(resp.getStatusCode()))
-                            throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
-                        String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
-                        return messageSerde.deserialize(responseBodyString, Message.class);
-                    });
-        } catch (Exception e) {
-            CompletableFuture<Message> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
-        }
+        String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
+        return catchExceptions(() ->
+            httpClient.preparePost(url)
+                .setBody(messageSerde.serialize(request))
+                .execute()
+                .toCompletableFuture()
+                .thenApply((resp) -> {
+                    if (isSuccessfulStatusCode(resp.getStatusCode()))
+                        throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
+                    String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
+                    return messageSerde.deserialize(responseBodyString, Message.class);
+                })
+        );
+
     }
 
     /**
@@ -94,14 +91,9 @@ public class MessagingClient {
      * @param fileName File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(String path, String fileName) throws FileNotFoundException, IOException {
-        FileInputStream stream = new FileInputStream(path);
-        try {
+    public String uploadMedia(String path, String fileName) throws IOException {
+        try (FileInputStream stream = new FileInputStream(path)) {
             return uploadMedia(stream, fileName);
-        }
-        finally{
-            if (stream != null)
-                stream.close();
         }
     }
 
@@ -137,8 +129,8 @@ public class MessagingClient {
      */
     public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName){
         String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
-        try{
-            return httpClient.preparePut(url)
+        return catchExceptions(() ->
+            httpClient.preparePut(url)
                     .setBody(byteArray)
                     .execute()
                     .toCompletableFuture()
@@ -146,12 +138,8 @@ public class MessagingClient {
                         if (isSuccessfulStatusCode(resp.getStatusCode()))
                             throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                         return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
-                    });
-        } catch (MessagingException e) {
-            CompletableFuture<String> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
-        }
+                    })
+        );
     }
 
     /**
@@ -161,20 +149,17 @@ public class MessagingClient {
      * @return CompletableFuture that contains byte array of the mms content
      */
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl){
-        try{
-            return httpClient.prepareGet(mediaUrl)
-                    .execute()
-                    .toCompletableFuture()
-                    .thenApply((resp) -> {
-                        if (isSuccessfulStatusCode(resp.getStatusCode()))
-                            throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
-                        return resp.getResponseBodyAsBytes();
-                    });
-        } catch (MessagingException e) {
-            CompletableFuture<byte[]> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
-        }
+        return catchExceptions(() ->
+                httpClient.prepareGet(mediaUrl)
+                .execute()
+                .toCompletableFuture()
+                .thenApply((resp) -> {
+                    if (isSuccessfulStatusCode(resp.getStatusCode()))
+                        throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
+                    return resp.getResponseBodyAsBytes();
+                })
+        );
+
     }
 
     /**
@@ -195,19 +180,26 @@ public class MessagingClient {
      * @return byte array containing the mms content
      */
     public void downloadMessageMediaToFile(String mediaUrl, String path) throws IOException {
-        FileOutputStream stream = new FileOutputStream(path);
-        try {
+        try (FileOutputStream stream = new FileOutputStream(path)) {
             stream.write(downloadMessageMediaAsBytes(mediaUrl));
         }
-        finally {
-            if (stream != null)
-                stream.close();
+    }
+
+    private <T> CompletableFuture<T> catchExceptions(Supplier<CompletableFuture<T>> supplier) {
+        try{
+            supplier.get();
+        }
+        catch (MessagingException e) {
+            CompletableFuture<T> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
         }
     }
 
     private boolean isSuccessfulStatusCode(Integer statusCode){
-        while (statusCode > 10)
+        while (statusCode > 10) {
             statusCode /= 10;
+        }
         return statusCode == 2;
     }
 }
