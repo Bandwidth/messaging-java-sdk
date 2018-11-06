@@ -43,6 +43,11 @@ public class MessagingClient {
         httpClient = asyncHttpClient(httpClientConfig);
     }
 
+    MessagingClient(String userId, AsyncHttpClient mockClient) {
+        this.userId = userId;
+        httpClient = mockClient;
+    }
+
     /**
      * Send an SMS / MMS / or group MMS and wait for the response
      *
