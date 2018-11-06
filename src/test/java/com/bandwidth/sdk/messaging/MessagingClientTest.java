@@ -1,5 +1,6 @@
 package com.bandwidth.sdk.messaging;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +13,6 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 
@@ -68,7 +68,7 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
 
-        Assert.assertEquals(returnMessage,client.sendMessage(smr));
+        assertThat(returnMessage).isEqualTo(client.sendMessage(smr));
     }
 
 }

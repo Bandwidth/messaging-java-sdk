@@ -1,12 +1,13 @@
 package com.bandwidth.sdk.messaging;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
 import com.bandwidth.sdk.messaging.models.ImmutableMessageEvent;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.MessageEvent;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -40,6 +41,6 @@ public class MessagingCallbackHelperTest {
     @Test
     public void testParseCallback() throws IOException {
         MessageEvent returnedEvent = callbackHelper.parseCallback(serde.serialize(messageEvent));
-        Assert.assertEquals(returnedEvent,messageEvent);
+        assertThat(returnedEvent).isEqualTo(messageEvent);
     }
 }

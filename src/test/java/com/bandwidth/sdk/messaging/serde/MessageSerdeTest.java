@@ -1,10 +1,10 @@
 package com.bandwidth.sdk.messaging.serde;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
 import com.bandwidth.sdk.messaging.models.Message;
 
-
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,6 +31,6 @@ public class MessageSerdeTest {
     public void testMessageSerde() throws IOException {
         String test = serde.serialize(message);
         Message deserialized = serde.deserialize(test, Message.class);
-        Assert.assertEquals(deserialized, message);
+        assertThat(deserialized).isEqualTo(message);
     }
 }
