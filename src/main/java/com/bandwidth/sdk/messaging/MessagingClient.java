@@ -75,7 +75,7 @@ public class MessagingClient {
                 .execute()
                 .toCompletableFuture()
                 .thenApply((resp) -> {
-                    if (isSuccessfulStatusCode(resp.getStatusCode()))
+                    if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
                         throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                     String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
                     return messageSerde.deserialize(responseBodyString, Message.class);
@@ -135,7 +135,7 @@ public class MessagingClient {
                     .execute()
                     .toCompletableFuture()
                     .thenApply((resp) -> {
-                        if (isSuccessfulStatusCode(resp.getStatusCode()))
+                        if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
                             throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                         return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
                     })
@@ -154,7 +154,7 @@ public class MessagingClient {
                 .execute()
                 .toCompletableFuture()
                 .thenApply((resp) -> {
-                    if (isSuccessfulStatusCode(resp.getStatusCode()))
+                    if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
                         throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                     return resp.getResponseBodyAsBytes();
                 })
@@ -196,10 +196,8 @@ public class MessagingClient {
         }
     }
 
-    private boolean isSuccessfulStatusCode(Integer statusCode){
-        while (statusCode > 10) {
-            statusCode /= 10;
-        }
-        return statusCode == 2;
+    private boolean isSuccessfulHttpStatusCode(Integer statusCode){
+        statusCode /= 100;
+       return statusCode == 2;
     }
 }
