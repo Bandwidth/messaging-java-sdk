@@ -17,6 +17,4 @@ public class MessagingCallbackHelper {
     public MessageEvent parseCallback(String callback) throws IOException {
         return messageSerde.deserialize(callback, MessageEvent.class);
     }
-
-
 }
