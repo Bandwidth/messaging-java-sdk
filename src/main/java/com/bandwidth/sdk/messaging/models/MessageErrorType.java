@@ -20,11 +20,7 @@ public enum MessageErrorType {
     }
 
     public static MessageErrorType fromMessagingCode(Integer messagingCode) {
-        if (4000 <= messagingCode && messagingCode < 5000)
-            return MessageErrorType.CLIENT;
-        if (5000 <= messagingCode && messagingCode < 6000)
-            return MessageErrorType.SERVER;
-        return MessageErrorType.UNKNOWN;
+        return fromStatusCode(messagingCode/10);
     }
 
     public String getErrorType(){

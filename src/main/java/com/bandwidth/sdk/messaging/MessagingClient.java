@@ -75,7 +75,7 @@ public class MessagingClient {
                     .execute()
                     .toCompletableFuture()
                     .thenApply((resp) -> {
-                        if (resp.getStatusCode() != 200)
+                        if (isSuccessfulStatusCode(resp.getStatusCode()))
                             throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                         String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
                         return messageSerde.deserialize(responseBodyString, Message.class);
@@ -96,7 +96,13 @@ public class MessagingClient {
      */
     public String uploadMedia(String path, String fileName) throws FileNotFoundException, IOException {
         FileInputStream stream = new FileInputStream(path);
-        return uploadMedia(stream, fileName);
+        try {
+            return uploadMedia(stream, fileName);
+        }
+        finally{
+            if (stream != null)
+                stream.close();
+        }
     }
 
     /**
@@ -137,7 +143,7 @@ public class MessagingClient {
                     .execute()
                     .toCompletableFuture()
                     .thenApply((resp) -> {
-                        if (resp.getStatusCode() != 200)
+                        if (isSuccessfulStatusCode(resp.getStatusCode()))
                             throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                         return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
                     });
@@ -160,7 +166,7 @@ public class MessagingClient {
                     .execute()
                     .toCompletableFuture()
                     .thenApply((resp) -> {
-                        if (resp.getStatusCode() != 200)
+                        if (isSuccessfulStatusCode(resp.getStatusCode()))
                             throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
                         return resp.getResponseBodyAsBytes();
                     });
@@ -188,8 +194,20 @@ public class MessagingClient {
      * @param path path on disk to store file to
      * @return byte array containing the mms content
      */
-    public void downloadMessageMediaToDisk(String mediaUrl, String path) throws IOException {
+    public void downloadMessageMediaToFile(String mediaUrl, String path) throws IOException {
         FileOutputStream stream = new FileOutputStream(path);
-        stream.write(downloadMessageMediaAsBytes(mediaUrl));
+        try {
+            stream.write(downloadMessageMediaAsBytes(mediaUrl));
+        }
+        finally {
+            if (stream != null)
+                stream.close();
+        }
+    }
+
+    private boolean isSuccessfulStatusCode(Integer statusCode){
+        while (statusCode > 10)
+            statusCode /= 10;
+        return statusCode == 2;
     }
 }
