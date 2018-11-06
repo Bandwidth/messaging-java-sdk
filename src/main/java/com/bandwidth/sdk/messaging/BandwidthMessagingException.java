@@ -1,7 +1,7 @@
 package com.bandwidth.sdk;
 
 
-public class BandwidthException extends RuntimeException {
+public class BandwidthMessagingException extends RuntimeException {
 
     private static final String MESSAGE_ERROR_TYPE = "message-failed";
     
@@ -9,24 +9,24 @@ public class BandwidthException extends RuntimeException {
     private MessageEvent message;
 
 
-    public BandwidthException(String message) {
+    public BandwidthMessagingException(String message) {
         super(message);
     }
 
-    public BandwidthException(Throwable cause) {
+    public BandwidthMessagingException(Throwable cause) {
         super(cause);
     }
 
-    public BandwidthException(String message, Throwable cause) {
+    public BandwidthMessagingException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public BandwidthException(String message, int errorCode, Throwable cause) {
+    public BandwidthMessagingException(String message, int errorCode, Throwable cause) {
         super(message, cause);
         this.errorCode = errorCode;
     }
 
-    public BandwidthException(String message, MessageEvent messageEvent, Throwable cause) {
+    public BandwidthMessagingException(String message, MessageEvent messageEvent, Throwable cause) {
         super(message, cause);
         this.messageEvent = messageEvent;
         if (messageEvent.getErrorCode().isPresent()) { //no reason this should not be the case
