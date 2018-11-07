@@ -1,5 +1,6 @@
 package com.bandwidth.sdk.messaging;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
@@ -40,6 +41,12 @@ public class MessagingClient {
                 .build();
 
         httpClient = asyncHttpClient(httpClientConfig);
+    }
+
+    @VisibleForTesting
+    MessagingClient(String userId, AsyncHttpClient mockClient) {
+        this.userId = userId;
+        httpClient = mockClient;
     }
 
     /**
