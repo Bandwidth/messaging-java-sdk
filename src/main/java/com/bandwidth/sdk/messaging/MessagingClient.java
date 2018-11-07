@@ -1,7 +1,12 @@
 package com.bandwidth.sdk.messaging;
 
+import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchAsyncClientExceptions;
+import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientExceptions;
+import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import com.bandwidth.sdk.messaging.exception.MessagingClientException;
+import com.bandwidth.sdk.messaging.exception.MessagingServiceException;
 import com.google.common.io.ByteStreams;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -19,14 +24,14 @@ import org.asynchttpclient.Realm;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class MessagingClient {
+    private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
+    private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
     private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
@@ -55,9 +60,9 @@ public class MessagingClient {
     }
 
     @VisibleForTesting
-    MessagingClient(String userId, AsyncHttpClient mockClient) {
+    MessagingClient(String userId, AsyncHttpClient httpClient) {
         this.userId = userId;
-        httpClient = mockClient;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -77,52 +82,56 @@ public class MessagingClient {
      * @return A completable future that completes when the request completes, with the message object as the result
      */
     public CompletableFuture<Message> sendMessageAsync(SendMessageRequest request) {
-        String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
-        return catchExceptions(() ->
-            httpClient.preparePost(url)
-                .setBody(messageSerde.serialize(request))
-                .execute()
-                .toCompletableFuture()
-                .thenApply((resp) -> {
-                    if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
-                        throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
-                    String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
-                    return messageSerde.deserialize(responseBodyString, Message.class);
-                })
-        );
+        return catchAsyncClientExceptions(() -> {
+            String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
+            return httpClient.preparePost(url)
+                    .setHeader(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON)
+                    .setBody(messageSerde.serialize(request))
+                    .execute()
+                    .toCompletableFuture()
+                    .thenApply((resp) -> {
+                        throwIfApiError(resp);
+                        String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
+                        return messageSerde.deserialize(responseBodyString, Message.class);
+                    });
+        });
 
     }
 
     /**
      * Uploads MMS media content.
      *
-     * @param path Path to file to upload
+     * @param path     Path to file to upload
      * @param fileName File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(String path, String fileName) throws IOException {
-        try (FileInputStream stream = new FileInputStream(path)) {
-            return uploadMedia(stream, fileName);
-        }
+    public String uploadMedia(String path, String fileName) {
+        return catchClientExceptions(() -> {
+            try (FileInputStream stream = new FileInputStream(path)) {
+                return uploadMedia(stream, fileName);
+            }
+        });
     }
 
     /**
      * Uploads MMS media content.
      *
-     * @param stream InputStream that contains the data to be sent
+     * @param stream   InputStream that contains the data to be sent
      * @param fileName File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(InputStream stream, String fileName) throws IOException {
-        byte[] byteArray = ByteStreams.toByteArray(stream);
-        return uploadMedia(byteArray, fileName);
+    public String uploadMedia(InputStream stream, String fileName) {
+        return catchClientExceptions(() -> {
+            byte[] byteArray = ByteStreams.toByteArray(stream);
+            return uploadMedia(byteArray, fileName);
+        });
     }
 
     /**
      * Uploads MMS media content.
      *
      * @param byteArray byte array of the data to be sent
-     * @param fileName File name as you would like it to be uploaded
+     * @param fileName  File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
     public String uploadMedia(byte[] byteArray, String fileName) {
@@ -133,21 +142,20 @@ public class MessagingClient {
      * Uploads MMS media content.
      *
      * @param byteArray byte array of the data to be sent
-     * @param fileName File name as you would like it to be uploaded
+     * @param fileName  File name as you would like it to be uploaded
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
-    public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName){
+    public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
         String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
-        return catchExceptions(() ->
-            httpClient.preparePut(url)
-                    .setBody(byteArray)
-                    .execute()
-                    .toCompletableFuture()
-                    .thenApply((resp) -> {
-                        if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
-                            throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
-                        return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
-                    })
+        return catchAsyncClientExceptions(() ->
+                httpClient.preparePut(url)
+                        .setBody(byteArray)
+                        .execute()
+                        .toCompletableFuture()
+                        .thenApply((resp) -> {
+                            throwIfApiError(resp);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+                        })
         );
     }
 
@@ -157,16 +165,15 @@ public class MessagingClient {
      * @param mediaUrl URL that you would like to download
      * @return CompletableFuture that contains byte array of the mms content
      */
-    public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl){
-        return catchExceptions(() ->
+    public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
+        return catchAsyncClientExceptions(() ->
                 httpClient.prepareGet(mediaUrl)
-                .execute()
-                .toCompletableFuture()
-                .thenApply((resp) -> {
-                    if (isSuccessfulHttpStatusCode(resp.getStatusCode()))
-                        throw new MessagingException(MessageErrorType.fromStatusCode(resp.getStatusCode()).toString());
-                    return resp.getResponseBodyAsBytes();
-                })
+                        .execute()
+                        .toCompletableFuture()
+                        .thenApply((resp) -> {
+                            throwIfApiError(resp);
+                            return resp.getResponseBodyAsBytes();
+                        })
         );
 
     }
@@ -177,7 +184,7 @@ public class MessagingClient {
      * @param mediaUrl media urls to download from
      * @return byte array containing the mms content
      */
-    public byte[] downloadMessageMediaAsBytes(String mediaUrl){
+    public byte[] downloadMessageMediaAsBytes(String mediaUrl) {
         return downloadMessageMediaAsync(mediaUrl).join();
     }
 
@@ -185,29 +192,16 @@ public class MessagingClient {
      * Downloads MMS media content and stores it to disk
      *
      * @param mediaUrl media urls to download from
-     * @param path path on disk to store file to
+     * @param path     path on disk to store file to
      * @return byte array containing the mms content
      */
-    public void downloadMessageMediaToFile(String mediaUrl, String path) throws IOException {
-        File tmp = new File(path);
-        try (FileOutputStream stream = new FileOutputStream(tmp,false)) {
-            stream.write(downloadMessageMediaAsBytes(mediaUrl));
-        }
-    }
-
-    private <T> CompletableFuture<T> catchExceptions(Supplier<CompletableFuture<T>> supplier) {
-        try{
-            return supplier.get();
-        }
-        catch (MessagingException e) {
-            CompletableFuture<T> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
-        }
-    }
-
-    private boolean isSuccessfulHttpStatusCode(Integer statusCode){
-        statusCode /= 100;
-       return statusCode == 2;
+    public void downloadMessageMediaToFile(String mediaUrl, String path) {
+        catchClientExceptions(() -> {
+            File tmp = new File(path);
+            try (FileOutputStream stream = new FileOutputStream(tmp)) {
+                stream.write(downloadMessageMediaAsBytes(mediaUrl));
+            }
+            return (Void) null;
+        });
     }
 }
