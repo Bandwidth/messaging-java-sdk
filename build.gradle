@@ -45,6 +45,6 @@ dependencies {
     compile 'com.google.guava:guava:27.0-jre'
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.5'
     testCompile('org.assertj:assertj-core:3.6.2')
-    testCompile('org.mockito:mockito-core:2.7.9')
+    testCompile('org.mockito:mockito-core:2.23.0')
     testCompile('junit:junit:4.4')
 }
