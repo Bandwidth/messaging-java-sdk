@@ -14,7 +14,7 @@ public class MessagingCallbackHelper {
      * @param callback
      * @return Deserialized MessageEvent object
      */
-    public MessageEvent parseCallback(String callback) throws IOException {
+    public MessageEvent parseCallback(String callback) {
         return messageSerde.deserialize(callback, MessageEvent.class);
     }
 }
