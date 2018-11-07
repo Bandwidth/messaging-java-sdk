@@ -1,6 +1,7 @@
 package com.bandwidth.sdk.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,8 +17,6 @@ import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +28,6 @@ public class MessagingClientTest {
     private final BoundRequestBuilder boundRequestBuilder = mock(BoundRequestBuilder.class);
     private final ListenableFuture<Response> listenableFuture = mock(ListenableFuture.class);
     private final Response response = mock(Response.class);
-    private final FileInputStream inputStream = mock(FileInputStream.class);
 
     private final String userId = "u-abcde123456";
 
@@ -74,21 +72,23 @@ public class MessagingClientTest {
     }
 
     @Test
-    public void testdownloadMessageMediaAsBytes() throws IOException {
+    public void testdownloadMessageMediaAsBytes() {
         when(mockClient.prepareGet(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBodyAsBytes()).thenReturn("asdf".getBytes());
+        when(response.getStatusCode()).thenReturn(200);
 
         client.downloadMessageMediaToFile("url","./.tmp");
     }
 
     @Test
-    public void testMediaUploadFromStream() throws IOException {
+    public void testMediaUploadFromStream() {
         when(mockClient.preparePut(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.setBody(any(byte[].class))).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(response.getStatusCode()).thenReturn(200);
 
         client.uploadMedia("./.tmp","fileName.txt");
     }
