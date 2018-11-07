@@ -50,14 +50,8 @@ public abstract class MessageEvent {
     }
 
     @JsonIgnore
-    public Optional<MessageErrorTypes> getErrorType(){
-        return getErrorCode().map(errorCode -> {
-            if (4000 <= errorCode && errorCode < 5000)
-                return MessageErrorTypes.CLIENT;
-            else if (5000 <= errorCode && errorCode < 6000)
-                return MessageErrorTypes.SERVER;
-            else return MessageErrorTypes.UNKNOWN;
-        });
+    public Optional<MessageErrorType> getErrorType(){
+        return getErrorCode().map(errorCode -> MessageErrorType.fromMessagingCode(errorCode));
     }
 
     @JsonIgnore

@@ -1,4 +1,4 @@
-package com.bandwidth.sdk;
+package com.bandwidth.sdk.messaging;
 
 
 public class MessagingException extends RuntimeException {
