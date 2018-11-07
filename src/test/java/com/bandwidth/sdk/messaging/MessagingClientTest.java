@@ -17,12 +17,14 @@ import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 public class MessagingClientTest {
-
+    private final String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
 
     private final AsyncHttpClient mockClient = mock(AsyncHttpClient.class);
     private final BoundRequestBuilder boundRequestBuilder = mock(BoundRequestBuilder.class);
@@ -78,8 +80,11 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBodyAsBytes()).thenReturn("asdf".getBytes());
         when(response.getStatusCode()).thenReturn(200);
-
+        File tmpFile = new File("./.tmp");
+        tmpFile.delete();
+        assertThat(tmpFile).doesNotExist();
         client.downloadMessageMediaToFile("url","./.tmp");
+        assertThat(tmpFile).exists();
     }
 
     @Test
@@ -90,7 +95,8 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getStatusCode()).thenReturn(200);
 
-        client.uploadMedia("./.tmp","fileName.txt");
+        String testUrl = client.uploadMedia("./.tmp","fileName.txt");
+        assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, "fileName.txt"));
     }
 
 }
