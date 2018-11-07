@@ -162,7 +162,7 @@ public class MessagingClient {
     }
 
     /**
-     * Downloads MMS media content asynchronously .
+     * Downloads MMS media content asynchronously.
      *
      * @param mediaUrl URL that you would like to download
      * @return CompletableFuture that contains byte array of the mms content
@@ -170,6 +170,7 @@ public class MessagingClient {
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
         return catchAsyncClientExceptions(() -> {
             BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
+            // Remove credentials if the media is not hosted by Bandwidth
             if (!mediaUrl.startsWith(MEDIA_URL)) {
                 building.setRealm(blankRealm);
             }
