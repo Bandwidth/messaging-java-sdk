@@ -168,7 +168,7 @@ public class MessagingClient {
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
         return catchAsyncClientExceptions(() -> {
             BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
-            if (mediaUrl.startsWith(MEDIA_URL)) {
+            if (!mediaUrl.startsWith(MEDIA_URL)) {
                 building.setRealm(blankRealm);
             }
             return building.execute()
