@@ -4,6 +4,8 @@ import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 import com.google.common.io.ByteStreams;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.MessageErrorType;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
@@ -49,6 +51,12 @@ public class MessagingClient {
                 .build();
 
         httpClient = asyncHttpClient(httpClientConfig);
+    }
+
+    @VisibleForTesting
+    MessagingClient(String userId, AsyncHttpClient mockClient) {
+        this.userId = userId;
+        httpClient = mockClient;
     }
 
     /**
