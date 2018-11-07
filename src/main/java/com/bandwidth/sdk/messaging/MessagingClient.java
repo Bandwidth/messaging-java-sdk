@@ -16,6 +16,7 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -188,7 +189,8 @@ public class MessagingClient {
      * @return byte array containing the mms content
      */
     public void downloadMessageMediaToFile(String mediaUrl, String path) throws IOException {
-        try (FileOutputStream stream = new FileOutputStream(path)) {
+        File tmp = new File(path);
+        try (FileOutputStream stream = new FileOutputStream(tmp,false)) {
             stream.write(downloadMessageMediaAsBytes(mediaUrl));
         }
     }
