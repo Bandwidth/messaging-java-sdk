@@ -11,6 +11,8 @@ import com.bandwidth.sdk.messaging.serde.MessageSerde;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class MessagingCallbackHelperTest {
 
@@ -40,7 +42,7 @@ public class MessagingCallbackHelperTest {
 
     @Test
     public void testParseCallback() throws IOException {
-        MessageEvent returnedEvent = callbackHelper.parseCallback(serde.serialize(messageEvent));
-        assertThat(returnedEvent).isEqualTo(messageEvent);
+        List<MessageEvent> returnedEvent = callbackHelper.parseCallback(serde.serialize(Arrays.asList(messageEvent)));
+        assertThat(returnedEvent.get(0)).isEqualTo(messageEvent);
     }
 }

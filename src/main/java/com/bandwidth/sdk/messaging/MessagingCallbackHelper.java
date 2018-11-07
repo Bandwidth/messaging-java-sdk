@@ -2,8 +2,9 @@ package com.bandwidth.sdk.messaging;
 
 import com.bandwidth.sdk.messaging.models.MessageEvent;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.io.IOException;
+import java.util.List;
 
 public class MessagingCallbackHelper {
     private final MessageSerde messageSerde = new MessageSerde();
@@ -14,7 +15,7 @@ public class MessagingCallbackHelper {
      * @param callback
      * @return Deserialized MessageEvent object
      */
-    public MessageEvent parseCallback(String callback) {
-        return messageSerde.deserialize(callback, MessageEvent.class);
+    public List<MessageEvent> parseCallback(String callback) {
+        return messageSerde.deserialize(callback, new TypeReference<List<MessageEvent>>(){});
     }
 }
