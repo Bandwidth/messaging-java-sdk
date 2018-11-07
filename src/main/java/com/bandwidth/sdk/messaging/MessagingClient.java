@@ -5,19 +5,17 @@ import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientEx
 import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
-import com.bandwidth.sdk.messaging.exception.MessagingClientException;
-import com.bandwidth.sdk.messaging.exception.MessagingServiceException;
-import com.google.common.io.ByteStreams;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.ByteStreams;
 
 import com.bandwidth.sdk.messaging.models.Message;
-import com.bandwidth.sdk.messaging.models.MessageErrorType;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
 
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
 
@@ -35,6 +33,11 @@ public class MessagingClient {
 
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
     private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
+
+    private static final Realm blankRealm = new Realm.Builder("", "")
+            .setUsePreemptiveAuth(false)
+            .setScheme(Realm.AuthScheme.BASIC)
+            .build();
 
     private final String userId;
     private final AsyncHttpClient httpClient;
@@ -160,20 +163,25 @@ public class MessagingClient {
     }
 
     /**
-     * Downloads MMS media content asynchronously .
+     * Downloads MMS media content asynchronously.
      *
      * @param mediaUrl URL that you would like to download
      * @return CompletableFuture that contains byte array of the mms content
      */
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
-        return catchAsyncClientExceptions(() ->
-                httpClient.prepareGet(mediaUrl)
-                        .execute()
-                        .toCompletableFuture()
-                        .thenApply((resp) -> {
-                            throwIfApiError(resp);
-                            return resp.getResponseBodyAsBytes();
-                        })
+        return catchAsyncClientExceptions(() -> {
+            BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
+            // Remove credentials if the media is not hosted by Bandwidth
+            if (!mediaUrl.startsWith(MEDIA_URL)) {
+                building.setRealm(blankRealm);
+            }
+            return building.execute()
+                    .toCompletableFuture()
+                    .thenApply((resp) -> {
+                        throwIfApiError(resp);
+                        return resp.getResponseBodyAsBytes();
+                    });
+            }
         );
 
     }
