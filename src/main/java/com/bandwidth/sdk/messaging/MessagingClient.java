@@ -33,13 +33,15 @@ public class MessagingClient {
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
     private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
 
-    private final String userId;
-    private final AsyncHttpClient httpClient;
-    private final MessageSerde messageSerde = new MessageSerde();
-    private final Realm blankRealm = new Realm.Builder("", "")
+    private static final Realm blankRealm = new Realm.Builder("", "")
             .setUsePreemptiveAuth(false)
             .setScheme(Realm.AuthScheme.BASIC)
             .build();
+
+    private final String userId;
+    private final AsyncHttpClient httpClient;
+    private final MessageSerde messageSerde = new MessageSerde();
+
     /**
      * Credentials to access Bandwidth's Messaging V2 api
      *
