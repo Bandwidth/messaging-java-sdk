@@ -1,6 +1,7 @@
 package com.bandwidth.sdk.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,13 +15,10 @@ import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class MessagingClientTest {
 
@@ -61,13 +59,14 @@ public class MessagingClientTest {
 
 
     @Test
-    public void testMessagingClient() throws ExecutionException, IOException, InterruptedException {
-        when(mockClient.preparePost(ArgumentMatchers.anyString())).thenReturn(boundRequestBuilder);
-        when(boundRequestBuilder.setBody(ArgumentMatchers.anyString())).thenReturn(boundRequestBuilder);
+    public void testMessagingClient() {
+        when(mockClient.preparePost(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(boundRequestBuilder.setHeader(anyString(), anyString() )).thenReturn(boundRequestBuilder);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
-
+        when(response.getStatusCode()).thenReturn(200);
         assertThat(returnMessage).isEqualTo(client.sendMessage(smr));
     }
 
