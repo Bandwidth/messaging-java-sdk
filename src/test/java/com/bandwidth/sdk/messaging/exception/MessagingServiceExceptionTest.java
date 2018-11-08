@@ -11,7 +11,7 @@ public class MessagingServiceExceptionTest {
 
     private static final String ERROR_RESPONSE =
             "{\"type\":\"request-validation\",\"description\":\"Your request could not be accepted\",\"fieldE" +
-                    "rrors\":[{\"fieldName\":\"to\",\"description\":\"'+19198674339sbb' must be replaced wi" +
+                    "rrors\":[{\"fieldName\":\"to\",\"description\":\"'+1invalidnumber' must be replaced wi" +
                     "th a valid E164 formatted telephone number\"}]}\n}";
     private final Response response = mock(Response.class);
 
