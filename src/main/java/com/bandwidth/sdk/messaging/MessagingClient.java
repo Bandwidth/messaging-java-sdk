@@ -5,14 +5,11 @@ import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientEx
 import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.ByteStreams;
-
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
 
+import org.apache.commons.io.IOUtils;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -62,7 +59,6 @@ public class MessagingClient {
         httpClient = asyncHttpClient(httpClientConfig);
     }
 
-    @VisibleForTesting
     MessagingClient(String userId, AsyncHttpClient httpClient) {
         this.userId = userId;
         this.httpClient = httpClient;
@@ -124,10 +120,7 @@ public class MessagingClient {
      * @return URL that can be sent in an MMS
      */
     public String uploadMedia(InputStream stream, String fileName) {
-        return catchClientExceptions(() -> {
-            byte[] byteArray = ByteStreams.toByteArray(stream);
-            return uploadMedia(byteArray, fileName);
-        });
+        return catchClientExceptions(() -> uploadMedia(IOUtils.toByteArray(stream), fileName));
     }
 
     /**
