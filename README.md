@@ -4,7 +4,7 @@ Java SDK for [Bandwidth's V2 Messaging Platform](https://dev.bandwidth.com/v2-me
 
 [![Build Status](https://travis-ci.org/Bandwidth/messaging-java-sdk.svg?branch=master)](https://travis-ci.org/Bandwidth/messaging-java-sdk)
 [![MIT license](https://img.shields.io/crates/l/pubsub.svg)](./LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/com.bandwidth.sdk/messaging.svg)](https://search.maven.org/search?q=g:com.bandwidth.sdk)
+[![Maven Central](https://img.shields.io/maven-central/v/com.bandwidth.sdk/messaging.svg)](https://search.maven.org/search?q=g:com.bandwidth.sdk.messaging)
 ===
 
 ## Dependency
