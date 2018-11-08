@@ -39,8 +39,7 @@ public class MyAwesomeBandwidthMessagingApp{
                 "u-aeawj73oafil", // your UserID
                 "t-ayu44kfjhbf", // your api token
                 "soykuhkfalkjdf" // your api secret
-        );
-        
+        );        
         // Upload a local file that can be used for MMS 
         String myUploadedMedia = client.uploadMedia("/path/to/file.jpg","media_file_name.jpg");
         

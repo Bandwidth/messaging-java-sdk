@@ -149,7 +149,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
                         .setBody(byteArray)
