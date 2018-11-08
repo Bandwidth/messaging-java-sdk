@@ -43,7 +43,7 @@ public class MyAwesomeBandwidthMessagingApp{
         // Upload a local file that can be used for MMS 
         String myUploadedMedia = client.uploadMedia("/path/to/file.jpg","media_file_name.jpg");
         
-        // Sending a group MMS with the uploaded media 
+        // Sending a group MMS with the uploaded media. You can also use pass a url to any publicly accessible media file.
         Message message = client.sendMessage(
             SendMessageRequest.builder()
                 .from("+12223334444")
