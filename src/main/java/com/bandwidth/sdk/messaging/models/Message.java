@@ -39,10 +39,12 @@ public abstract class Message {
 
     @JsonIgnore
     public Set<String> getReplyNumbers(){
-        return getTo()
+        Set<String> retVal = getTo()
             .stream()
             .filter(number -> !getOwner().equals(number))
             .collect(Collectors.toSet());
+        retVal.add(getFrom());
+        return retVal;
     }
 
 }
