@@ -1,0 +1,4 @@
+com.bandwidth.sdk.messaging
+com.bandwidth.sdk.messaging.exception
+com.bandwidth.sdk.messaging.models
+com.bandwidth.sdk.messaging.serde
