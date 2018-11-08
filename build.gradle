@@ -29,6 +29,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: "net.ltgt.apt"
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
@@ -48,3 +49,18 @@ dependencies {
     testCompile('org.mockito:mockito-core:2.23.0')
     testCompile('junit:junit:4.4')
 }
+
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.bandwidth.sdk'
+            artifactId = 'messaging'
+            version = '0.1-SNAPSHOT'
+            from components.java
+        }
+    }
+}
+
+
