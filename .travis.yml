@@ -11,4 +11,4 @@ deploy:
   keep-history: true
   verbose: true
   on:
-    branch: javadoc # Temporarily set to javadoc branch for testing. Will change to master before merging
+    branch: master
