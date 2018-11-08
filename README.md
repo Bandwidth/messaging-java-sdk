@@ -73,7 +73,6 @@ public class MyAwesomeBandwidthMessagingApp{
                 logger.error("There was a messaging error {} {}", 
                         messageEvent.getErrorType().get(), 
                         messageEvent.getMessage().getDescription());
-                
                 doSomethingWithErrors(messageEvent);
             }
             // If the message is incoming from an end user to your phone number
