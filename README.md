@@ -34,7 +34,7 @@ public class MyAwesomeBandwidthMessagingApp{
                 "t-ayu44kfjhbf", // your api token
                 "soykuhkfalkjdf" // your api secret
         );
-
+        String myUploadedMedia = client.uploadMedia("~/path/to/file.jpg","media_file_name.jpg")
         Message message = client.sendMessage(SendMessageRequest.builder()
                 .from("+12223334444")
                 .addTo("+13334445555")
@@ -42,7 +42,7 @@ public class MyAwesomeBandwidthMessagingApp{
                 .applicationId("a-a7o34uhflaifadsf")
                 .text("This is a test group MMS message")
                 .addMedia("http://example.com/MyMedia.jpg") // adding media is optional (will be sent as MMS)
-                .addMedia("http://example.com/OtherMedia.png")
+                .addMedia(myUploadedMedia)
                 .tag("An arbitrary value I will receive in associated callbacks")
                 .build()
         );
