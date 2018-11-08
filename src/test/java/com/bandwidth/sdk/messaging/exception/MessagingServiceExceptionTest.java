@@ -1,16 +1,8 @@
 package com.bandwidth.sdk.messaging.exception;
 
-import com.bandwidth.sdk.messaging.MessagingClient;
-import com.bandwidth.sdk.messaging.models.ImmutableMessageApiError;
-import com.bandwidth.sdk.messaging.models.ImmutableMessageApiFieldError;
-import com.bandwidth.sdk.messaging.serde.MessageSerde;
 import org.asynchttpclient.Response;
 import org.junit.Test;
 
-//import static org.junit.Assert.assertThat;
-import java.util.concurrent.CompletionException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
