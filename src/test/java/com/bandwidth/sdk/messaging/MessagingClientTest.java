@@ -64,9 +64,9 @@ public class MessagingClientTest {
     @Test
     public void testMessagingClient() {
         when(mockClient.preparePost(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
-        when(boundRequestBuilder.setHeader(anyString(), anyString() )).thenReturn(boundRequestBuilder);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
         when(response.getStatusCode()).thenReturn(200);
@@ -76,6 +76,7 @@ public class MessagingClientTest {
     @Test
     public void testdownloadMessageMediaAsBytes() {
         when(mockClient.prepareGet(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBodyAsBytes()).thenReturn("asdf".getBytes());
@@ -90,6 +91,7 @@ public class MessagingClientTest {
     @Test
     public void testMediaUploadFromStream() {
         when(mockClient.preparePut(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.setBody(any(byte[].class))).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
@@ -98,5 +100,4 @@ public class MessagingClientTest {
         String testUrl = client.uploadMedia("./.tmp","fileName.txt");
         assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, "fileName.txt"));
     }
-
 }

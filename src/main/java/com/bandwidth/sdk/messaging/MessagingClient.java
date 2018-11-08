@@ -5,14 +5,11 @@ import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientEx
 import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.ByteStreams;
-
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
 
+import org.apache.commons.io.IOUtils;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -30,7 +27,8 @@ import java.util.concurrent.CompletableFuture;
 public class MessagingClient {
     private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
-
+    private static String USER_AGENT_HEADER = "user-agent";
+    private static String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
     private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
 
@@ -62,7 +60,6 @@ public class MessagingClient {
         httpClient = asyncHttpClient(httpClientConfig);
     }
 
-    @VisibleForTesting
     MessagingClient(String userId, AsyncHttpClient httpClient) {
         this.userId = userId;
         this.httpClient = httpClient;
@@ -89,6 +86,7 @@ public class MessagingClient {
             String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
             return httpClient.preparePost(url)
                     .setHeader(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON)
+                    .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE)
                     .setBody(messageSerde.serialize(request))
                     .execute()
                     .toCompletableFuture()
@@ -124,10 +122,7 @@ public class MessagingClient {
      * @return URL that can be sent in an MMS
      */
     public String uploadMedia(InputStream stream, String fileName) {
-        return catchClientExceptions(() -> {
-            byte[] byteArray = ByteStreams.toByteArray(stream);
-            return uploadMedia(byteArray, fileName);
-        });
+        return catchClientExceptions(() -> uploadMedia(IOUtils.toByteArray(stream), fileName));
     }
 
     /**
@@ -152,6 +147,7 @@ public class MessagingClient {
         String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
+                        .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE)
                         .setBody(byteArray)
                         .execute()
                         .toCompletableFuture()
@@ -170,7 +166,8 @@ public class MessagingClient {
      */
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
         return catchAsyncClientExceptions(() -> {
-            BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
+            BoundRequestBuilder building = httpClient.prepareGet(mediaUrl)
+                    .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE);
             // Remove credentials if the media is not hosted by Bandwidth
             if (!mediaUrl.startsWith(MEDIA_URL)) {
                 building.setRealm(blankRealm);
