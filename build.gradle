@@ -53,13 +53,88 @@ dependencies {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavexn(MavenPublication) {
             groupId = 'com.bandwidth.sdk'
             artifactId = 'messaging'
-            version = '0.1-SNAPSHOT'
+            version = '0.1'
             from components.java
         }
     }
 }
 
+//Taken and changed from http://weibeld.net/java/publish-to-maven-central.html#deploy-to-ossrh
+// Signing
+apply plugin: 'signing'
+signing {
+    sign configurations.archives
+}
 
+
+// Deploying
+apply plugin: 'maven'
+
+// Add Javadoc JAR and sources JAR to artifact
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+// Configure group ID, artifact ID, and version
+group = "com.bandwidth.sdk"
+archivesBaseName = "messaging"
+version = "0.1"
+
+// Build, sign, and upload
+uploadArchives {
+    repositories {
+        mavenDeployer {
+
+            // Sign POM
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            // Destination
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.project {
+                name 'Bandwidth Java Messaging'
+                packaging 'jar'
+                description 'Java SDK for Bandwidth Messaging'
+                url 'https://github.com/Bandwidth/messaging-java-sdk'
+
+                scm {
+                    connection 'scm:git:git://github.com/Bandwidth/messaging-java-sdk.git'
+                    developerConnection 'scm:git:ssh://github.com/Bandwidth/messaging-java-sdk.git'
+                    url 'https://github.com/Bandwidth/messaging-java-sdk/tree/master'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'dx-bandwidth'
+                        name 'DX-Bandwidth'
+                        email 'dx@bandwidth.com'
+                        organization 'bandwidth'
+                        organizationUrl 'http://bandwidth.com'
+                    }
+                }
+            }
+        }
+    }
+}
