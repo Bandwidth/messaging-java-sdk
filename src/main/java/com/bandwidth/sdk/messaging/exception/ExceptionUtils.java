@@ -5,9 +5,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ExceptionUtils {
 
-    public static <T> CompletableFuture<T> catchAsyncClientExceptions(Callable<CompletableFuture<T>> supplier) {
+    public static <T> CompletableFuture<T> catchAsyncClientExceptions(Callable<CompletableFuture<T>> callable) {
         try {
-            return supplier.call();
+            return callable.call();
         } catch (Throwable e) {
             CompletableFuture<T> future = new CompletableFuture<>();
             future.completeExceptionally(new MessagingClientException(e));
@@ -15,9 +15,9 @@ public class ExceptionUtils {
         }
     }
 
-    public static <T> T catchClientExceptions(Callable<T> supplier) {
+    public static <T> T catchClientExceptions(Callable<T> callable) {
         try {
-            return supplier.call();
+            return callable.call();
         } catch (Throwable e) {
             throw new MessagingClientException(e);
         }
