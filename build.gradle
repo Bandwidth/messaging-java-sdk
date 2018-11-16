@@ -63,6 +63,19 @@ publishing {
 }
 
 //Taken and changed from http://weibeld.net/java/publish-to-maven-central.html#deploy-to-ossrh
+
+//To deploy, you need to define the following in your local ~/.gradle/gradle.properties file
+//signing.keyId
+//signing.password
+//signing.secretKeyRingFile
+//ossrhUsername
+//ossrhPassword
+
+//To deploy, run
+//gradle uploadArchives
+
+//If you don't remove the -SNAPSHOT, the deploy will only go to the staging repo
+
 if (project.hasProperty("signing.keyId")) {
     // Signing
     apply plugin: 'signing'
