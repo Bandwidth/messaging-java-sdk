@@ -127,9 +127,9 @@ if (project.hasProperty("signing.keyId")) {
                     url 'https://github.com/Bandwidth/messaging-java-sdk'
 
                     scm {
-                        connection 'scm:git:git://github.com/Bandwidth/messaging-java-sdk.git'
-                        developerConnection 'scm:git:ssh://github.com/Bandwidth/messaging-java-sdk.git'
-                        url 'https://github.com/Bandwidth/messaging-java-sdk/tree/master'
+                        connection 'scm:git:git@github.com:Bandwidth/messaging-java-sdk.git'
+                        developerConnection 'scm:git:git@github.com:Bandwidth/messaging-java-sdk.git'
+                        url 'git@github.com:Bandwidth/messaging-java-sdk.git' 
                     }
 
                     licenses {
