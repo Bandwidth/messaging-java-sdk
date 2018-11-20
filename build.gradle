@@ -53,7 +53,7 @@ dependencies {
 
 publishing {
     publications {
-        mavexn(MavenPublication) {
+        maven(MavenPublication) {
             groupId = 'com.bandwidth.sdk'
             artifactId = 'messaging'
             version = '0.2.0-SNAPSHOT'
