@@ -52,10 +52,7 @@ public class MessagingClient {
     public static class Builder {
 
         private static final String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
-
-        /**
-         * {@link RequestFilter} that adds the required "x-realm: admin" header to all outbound requests.
-         */
+        
         private static final RequestFilter USER_AGENT_FILTER = new RequestFilter() {
             @Override
             public <T> FilterContext<T> filter(FilterContext<T> ctx) {
@@ -77,7 +74,7 @@ public class MessagingClient {
         }
 
         /**
-         * Mandatory. Specify the id for the account that the client will target.
+         * Mandatory. Specify the user id for that messages will be sent from.
          */
         public Builder userId(String userId) {
             this.userId = userId;
@@ -85,7 +82,7 @@ public class MessagingClient {
         }
 
         /**
-         * Mandatory. Specify the username for the account that the client will target.
+         * Mandatory. Specify the token to be used for authentication.
          */
         public Builder token(String token) {
             this.token = token;
@@ -93,7 +90,7 @@ public class MessagingClient {
         }
 
         /**
-         * Mandatory. Specify the password for the account that the client will target.
+         * Mandatory. Specify the secret to be used for authentication.
          */
         public Builder secret(String secret) {
             this.secret = secret;
@@ -102,7 +99,7 @@ public class MessagingClient {
 
         /**
          * Optional. Allows specifying a {@link AsyncHttpClientConfig} with custom settings. The passed configuration will
-         * be cloned and the necessary configuration for the Numbers client will be added.
+         * be cloned and the necessary configuration for the Messaging client will be added.
          */
         public Builder config(AsyncHttpClientConfig config) {
             this.config = config;
