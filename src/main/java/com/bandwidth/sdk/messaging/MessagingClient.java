@@ -74,7 +74,7 @@ public class MessagingClient {
         }
 
         /**
-         * Mandatory. Specify the user id for that messages will be sent from.
+         * Mandatory. Specify the user id for the account.
          */
         public Builder userId(String userId) {
             this.userId = userId;
