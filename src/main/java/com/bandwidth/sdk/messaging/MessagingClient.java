@@ -15,6 +15,8 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
+import org.asynchttpclient.filter.FilterContext;
+import org.asynchttpclient.filter.RequestFilter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,13 +24,15 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 
 public class MessagingClient {
     private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
-    private static String USER_AGENT_HEADER = "user-agent";
-    private static String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
     private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
     private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
 
@@ -41,23 +45,81 @@ public class MessagingClient {
     private final AsyncHttpClient httpClient;
     private final MessageSerde messageSerde = new MessageSerde();
 
-    /**
-     * Credentials to access Bandwidth's Messaging V2 api
-     *
-     * @param userId Ex: u-1a2b3c4d
-     * @param token  Ex: t-1a2b3c4d
-     * @param secret Ex: a3947ouilar
-     */
-    public MessagingClient(String userId, String token, String secret) {
-        this.userId = userId;
+    public static MessagingClient.Builder builder() {
+        return new MessagingClient.Builder();
+    }
 
-        AsyncHttpClientConfig httpClientConfig = new DefaultAsyncHttpClientConfig.Builder()
-                .setRealm(new Realm.Builder(token, secret)
-                        .setUsePreemptiveAuth(true)
-                        .setScheme(Realm.AuthScheme.BASIC))
-                .build();
+    public static class Builder {
 
-        httpClient = asyncHttpClient(httpClientConfig);
+        private static final String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
+        
+        private static final RequestFilter USER_AGENT_FILTER = new RequestFilter() {
+            @Override
+            public <T> FilterContext<T> filter(FilterContext<T> ctx) {
+                HttpHeaders headers = ctx.getRequest().getHeaders();
+                headers.add(HttpHeaderNames.USER_AGENT, USER_AGENT_HEADER_VALUE);
+                return ctx;
+            }
+        };
+
+        private static final DefaultAsyncHttpClientConfig DEFAULT_CONFIG = new DefaultAsyncHttpClientConfig.Builder().build();
+
+        private String userId;
+        private String token;
+        private String secret;
+        private AsyncHttpClientConfig config;
+
+        private Builder() {
+            this.config = DEFAULT_CONFIG;
+        }
+
+        /**
+         * Mandatory. Specify the user id for the account.
+         */
+        public Builder userId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        /**
+         * Mandatory. Specify the token to be used for authentication.
+         */
+        public Builder token(String token) {
+            this.token = token;
+            return this;
+        }
+
+        /**
+         * Mandatory. Specify the secret to be used for authentication.
+         */
+        public Builder secret(String secret) {
+            this.secret = secret;
+            return this;
+        }
+
+        /**
+         * Optional. Allows specifying a {@link AsyncHttpClientConfig} with custom settings. The passed configuration will
+         * be cloned and the necessary configuration for the Messaging client will be added.
+         */
+        public Builder config(AsyncHttpClientConfig config) {
+            this.config = config;
+            return this;
+        }
+
+        public MessagingClient build() {
+            Objects.requireNonNull(userId, "A user id must be provided.");
+            Objects.requireNonNull(token, "A token must be provided.");
+            Objects.requireNonNull(secret, "A secret must be provided.");
+
+            AsyncHttpClientConfig httpClientConfig = new DefaultAsyncHttpClientConfig.Builder(config)
+                    .setRealm(new Realm.Builder(token, secret)
+                            .setUsePreemptiveAuth(true)
+                            .setScheme(Realm.AuthScheme.BASIC))
+                    .addRequestFilter(USER_AGENT_FILTER)
+                    .build();
+
+            return new MessagingClient(userId, asyncHttpClient(httpClientConfig));
+        }
     }
 
     MessagingClient(String userId, AsyncHttpClient httpClient) {
@@ -86,7 +148,6 @@ public class MessagingClient {
             String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
             return httpClient.preparePost(url)
                     .setHeader(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON)
-                    .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE)
                     .setBody(messageSerde.serialize(request))
                     .execute()
                     .toCompletableFuture()
@@ -147,7 +208,6 @@ public class MessagingClient {
         String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
-                        .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE)
                         .setBody(byteArray)
                         .execute()
                         .toCompletableFuture()
@@ -166,8 +226,7 @@ public class MessagingClient {
      */
     public CompletableFuture<byte[]> downloadMessageMediaAsync(String mediaUrl) {
         return catchAsyncClientExceptions(() -> {
-            BoundRequestBuilder building = httpClient.prepareGet(mediaUrl)
-                    .setHeader(USER_AGENT_HEADER, USER_AGENT_HEADER_VALUE);
+            BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
             // Remove credentials if the media is not hosted by Bandwidth
             if (!mediaUrl.startsWith(MEDIA_URL)) {
                 building.setRealm(blankRealm);

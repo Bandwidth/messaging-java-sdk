@@ -35,11 +35,23 @@ public class MyAwesomeBandwidthMessagingApp{
     public static void main(String[] args){
         
         // Create an instance of the Messaging Client
-        MessagingClient client = new MessagingClient(
-                "u-aeawj73oafil", // your UserID
-                "t-ayu44kfjhbf", // your api token
-                "soykuhkfalkjdf" // your api secret
-        );        
+        MessagingClient client = MessagingClient.builder()
+                .userId("u-aeawj73oafil")
+                .token("t-ayu44kfjhbf")
+                .secret("soykuhkfalkjdf")
+                .build();
+        
+        // Optionally, an AsyncHttpClientConfig may be provided to fine tune settings
+        MessagingClient client = MessagingClient.builder()
+                .userId("u-aeawj73oafil")
+                .token("t-ayu44kfjhbf")
+                .secret("soykuhkfalkjdf")
+                .config(
+                    new DefaultAsyncHttpClientConfig.Builder()
+                        .setRequestTimeout(60_000)
+                        .build())
+                .build();
+        
         // Upload a local file that can be used for MMS 
         String myUploadedMedia = client.uploadMedia("/path/to/file.jpg","media_file_name.jpg");
         
