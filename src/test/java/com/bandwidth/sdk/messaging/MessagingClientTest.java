@@ -1,6 +1,7 @@
 package com.bandwidth.sdk.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -60,6 +61,43 @@ public class MessagingClientTest {
             .time("timestamp")
             .build();
 
+
+    @Test
+    public void testValidBuilderPattern() {
+        MessagingClient testClient = MessagingClient.builder()
+                .userId("u-xxx")
+                .token("t-xxx")
+                .secret("xxx")
+                .build();
+        assertThat(testClient).isNotNull();
+    }
+
+    @Test
+    public void testInvalidBuilderPatternWithoutUserId() {
+        MessagingClient.Builder testClient = MessagingClient.builder()
+                .token("t-xxx")
+                .secret("xxx");
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> testClient.build());
+    }
+
+    @Test
+    public void testInvalidBuilderPatternWithoutToken() {
+        MessagingClient.Builder testClient = MessagingClient.builder()
+                .userId("u-xxx")
+                .secret("xxx");
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> testClient.build());
+    }
+
+    @Test
+    public void testInvalidBuilderPatternWithoutSecret() {
+        MessagingClient.Builder testClient = MessagingClient.builder()
+                .userId("t-xxx")
+                .token("t-xxx");
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> testClient.build());
+    }
 
     @Test
     public void testMessagingClient() {
