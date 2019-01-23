@@ -106,6 +106,23 @@ public class MessagingClient {
             return this;
         }
 
+        /**
+         * Optional. Specify the base url to send messages to.
+         */
+        public Builder baseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+
+        /**
+         * Optional. Specify the trusted media server.
+         * Note that credentials specified in client will be sent to this server.
+         */
+        public Builder mediaUrl(String mediaUrl) {
+            this.mediaUrl = mediaUrl;
+            return this;
+        }
         public MessagingClient build() {
             Objects.requireNonNull(userId, "A user id must be provided.");
             Objects.requireNonNull(token, "A token must be provided.");
@@ -118,13 +135,16 @@ public class MessagingClient {
                     .addRequestFilter(USER_AGENT_FILTER)
                     .build();
 
-            return new MessagingClient(userId, asyncHttpClient(httpClientConfig));
         }
     }
 
-    MessagingClient(String userId, AsyncHttpClient httpClient) {
         this.userId = userId;
         this.httpClient = httpClient;
+        if (baseUrl != null) {
+            this.BASE_URL = baseUrl;
+        }
+        if (mediaUrl != null) {
+            this.MEDIA_URL = mediaUrl;
     }
 
     /**

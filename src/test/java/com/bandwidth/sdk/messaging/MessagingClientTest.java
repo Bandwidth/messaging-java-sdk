@@ -34,7 +34,7 @@ public class MessagingClientTest {
 
     private final String userId = "u-abcde123456";
 
-    private final MessagingClient client = new MessagingClient(userId, mockClient);
+    private final MessagingClient client = new MessagingClient(userId, mockClient, null, null);
 
     private final MessageSerde messageSerde = new MessageSerde();
 
