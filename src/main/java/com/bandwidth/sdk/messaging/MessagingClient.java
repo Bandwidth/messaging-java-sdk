@@ -52,7 +52,10 @@ public class MessagingClient {
     public static class Builder {
 
         private static final String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
-        
+
+        /**
+         * {@link RequestFilter} that adds the required "x-realm: admin" header to all outbound requests.
+         */
         private static final RequestFilter USER_AGENT_FILTER = new RequestFilter() {
             @Override
             public <T> FilterContext<T> filter(FilterContext<T> ctx) {
@@ -67,6 +70,8 @@ public class MessagingClient {
         private String userId;
         private String token;
         private String secret;
+        private String baseUrl;
+        private String mediaUrl;
         private AsyncHttpClientConfig config;
 
         private Builder() {
@@ -123,6 +128,7 @@ public class MessagingClient {
             this.mediaUrl = mediaUrl;
             return this;
         }
+
         public MessagingClient build() {
             Objects.requireNonNull(userId, "A user id must be provided.");
             Objects.requireNonNull(token, "A token must be provided.");
@@ -135,9 +141,11 @@ public class MessagingClient {
                     .addRequestFilter(USER_AGENT_FILTER)
                     .build();
 
+            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl, mediaUrl);
         }
     }
 
+    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl, String mediaUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
         if (baseUrl != null) {
@@ -145,6 +153,7 @@ public class MessagingClient {
         }
         if (mediaUrl != null) {
             this.MEDIA_URL = mediaUrl;
+        }
     }
 
     /**
@@ -277,6 +286,7 @@ public class MessagingClient {
      *
      * @param mediaUrl media urls to download from
      * @param path     path on disk to store file to
+     * @return byte array containing the mms content
      */
     public void downloadMessageMediaToFile(String mediaUrl, String path) {
         catchClientExceptions(() -> {
