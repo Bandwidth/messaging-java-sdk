@@ -286,7 +286,6 @@ public class MessagingClient {
      *
      * @param mediaUrl media urls to download from
      * @param path     path on disk to store file to
-     * @return byte array containing the mms content
      */
     public void downloadMessageMediaToFile(String mediaUrl, String path) {
         catchClientExceptions(() -> {
