@@ -52,7 +52,10 @@ public class MessagingClient {
     public static class Builder {
 
         private static final String USER_AGENT_HEADER_VALUE = "messaging-java-sdk";
-        
+
+        /**
+         * {@link RequestFilter} that adds the required "x-realm: admin" header to all outbound requests.
+         */
         private static final RequestFilter USER_AGENT_FILTER = new RequestFilter() {
             @Override
             public <T> FilterContext<T> filter(FilterContext<T> ctx) {
@@ -67,6 +70,8 @@ public class MessagingClient {
         private String userId;
         private String token;
         private String secret;
+        private String baseUrl;
+        private String mediaUrl;
         private AsyncHttpClientConfig config;
 
         private Builder() {
@@ -106,6 +111,24 @@ public class MessagingClient {
             return this;
         }
 
+        /**
+         * Optional. Specify the base url to send messages to.
+         */
+        public Builder baseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+
+        /**
+         * Optional. Specify the trusted media server.
+         * Note that credentials specified in client will be sent to this server.
+         */
+        public Builder mediaUrl(String mediaUrl) {
+            this.mediaUrl = mediaUrl;
+            return this;
+        }
+
         public MessagingClient build() {
             Objects.requireNonNull(userId, "A user id must be provided.");
             Objects.requireNonNull(token, "A token must be provided.");
@@ -118,13 +141,19 @@ public class MessagingClient {
                     .addRequestFilter(USER_AGENT_FILTER)
                     .build();
 
-            return new MessagingClient(userId, asyncHttpClient(httpClientConfig));
+            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl, mediaUrl);
         }
     }
 
-    MessagingClient(String userId, AsyncHttpClient httpClient) {
+    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl, String mediaUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
+        if (baseUrl != null) {
+            this.BASE_URL = baseUrl;
+        }
+        if (mediaUrl != null) {
+            this.MEDIA_URL = mediaUrl;
+        }
     }
 
     /**
