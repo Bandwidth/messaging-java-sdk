@@ -20,7 +20,7 @@ public abstract class Message {
     public abstract String getOwner();
     public abstract Set<String> getTo();
     public abstract String getFrom();
-    public abstract String getText();
+    public abstract Optional<String> getText();
     public abstract String getApplicationId();
     public abstract Optional<List<String>> getMedia();
     public abstract Optional<String> getTag();
