@@ -37,8 +37,8 @@ import io.netty.handler.codec.http.HttpHeaders;
 public class MessagingClient {
     private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
-    private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
-    private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
+    private static String BASE_URL = "https://messaging.bandwidth.com/api/v2";
+    private static String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
 
     private static final Realm blankRealm = new Realm.Builder("", "")
             .setUsePreemptiveAuth(false)

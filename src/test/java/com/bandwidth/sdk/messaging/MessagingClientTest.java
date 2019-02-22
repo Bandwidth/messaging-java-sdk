@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MessagingClientTest {
-    private final String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
+    private final String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
 
     private final AsyncHttpClient mockClient = mock(AsyncHttpClient.class);
     private final BoundRequestBuilder boundRequestBuilder = mock(BoundRequestBuilder.class);
