@@ -3,11 +3,14 @@ package com.bandwidth.sdk.messaging;
 import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchAsyncClientExceptions;
 import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientExceptions;
 import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
+
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import com.bandwidth.sdk.messaging.models.Media;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.apache.commons.io.IOUtils;
 import org.asynchttpclient.AsyncHttpClient;
@@ -24,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -295,5 +299,62 @@ public class MessagingClient {
             }
             return (Void) null;
         });
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @return URL that can be sent in an MMS
+     */
+    public List<Media> listMedia() {
+        return listMediaAsync().join();
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @return CompletableFuture that contains URL that can be sent in an MMS
+     */
+    public CompletableFuture<List<Media>> listMediaAsync() {
+        String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
+        return catchAsyncClientExceptions(() ->
+                httpClient.prepareGet(url)
+                        .execute()
+                        .toCompletableFuture()
+                        .thenApply((resp) -> {
+                            throwIfApiError(resp);
+                            String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
+                            return messageSerde.deserialize(responseBodyString, new TypeReference<List<Media>>(){});
+                        })
+        );
+    }
+
+    /**
+     * Deletes MMS media content.
+     *
+     * @param fileName  File name as you would like it to be deleted
+     * @return URL that can be sent in an MMS
+     */
+    public void deleteMedia(String fileName) {
+        deleteMediaAsync(fileName).join();
+    }
+
+    /**
+     * Deletes MMS media content.
+     *
+     * @param fileName  File name as you would like it to be uploaded
+     * @return CompletableFuture that contains URL that can be sent in an MMS
+     */
+    public CompletableFuture deleteMediaAsync(String fileName) {
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+        return catchAsyncClientExceptions(() ->
+                httpClient.prepareDelete(url)
+                        .execute()
+                        .toCompletableFuture()
+                        .thenApply((resp) -> {
+                            throwIfApiError(resp);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+                        })
+        );
     }
 }

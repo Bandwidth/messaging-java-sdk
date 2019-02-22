@@ -7,7 +7,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.bandwidth.sdk.messaging.models.ImmutableMedia;
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
+import com.bandwidth.sdk.messaging.models.Media;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
@@ -21,7 +23,9 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MessagingClientTest {
@@ -60,6 +64,22 @@ public class MessagingClientTest {
             .segmentCount(1)
             .time("timestamp")
             .build();
+
+    private final Media returnMedia1 = ImmutableMedia.builder()
+            .mediaName("image1.jpg")
+            .content("http://example.com/api/image1.jpg")
+            .contentLength(561276)
+            .build();
+
+    private final Media returnMedia2 = ImmutableMedia.builder()
+            .mediaName("image2.jpg")
+            .content("http://example.com/api/image2.jpg")
+            .contentLength(2703360)
+            .build();
+
+    private final List<Media> returnMediaList = new ArrayList<>(
+            Arrays.asList(returnMedia1, returnMedia2)
+    );
 
 
     @Test
@@ -137,5 +157,29 @@ public class MessagingClientTest {
 
         String testUrl = client.uploadMedia("./.tmp","fileName.txt");
         assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, "fileName.txt"));
+    }
+
+    @Test
+    public void testListMedia() {
+        when(mockClient.prepareGet(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMediaList));
+        when(response.getStatusCode()).thenReturn(200);
+
+        List<Media> media = client.listMedia();
+        assertThat(media.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void testDeleteMedia() {
+        when(mockClient.prepareDelete(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(response.getStatusCode()).thenReturn(200);
+
+        client.deleteMedia("image.jpg");
     }
 }
