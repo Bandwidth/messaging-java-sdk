@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class MessagingClientTest {
     private final String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
@@ -160,11 +161,11 @@ public class MessagingClientTest {
     }
 
     @Test
-    public void testListMedia() {
+    public void testListMedia() throws InterruptedException, ExecutionException {
         when(mockClient.prepareGet(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
-        when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(listenableFuture.get()).thenReturn(response);
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMediaList));
         when(response.getStatusCode()).thenReturn(200);
 
