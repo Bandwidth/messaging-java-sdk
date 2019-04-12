@@ -22,7 +22,7 @@ public class MessagingServiceException extends RuntimeException {
         if (!isSuccessfulHttpStatusCode(apiResponse.getStatusCode())) {
             MessageApiError apiError;
             try {
-                apiError = new MessageSerde().deserialize(apiResponse.getResponseBody(), MessageApiError.class);
+                apiError = new MessageSerde().deserialize(apiResponse, MessageApiError.class);
             } catch (Exception e) {
                 throw new MessagingClientException("Unknown error response from API: " + apiResponse);
             }

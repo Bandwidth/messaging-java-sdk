@@ -18,6 +18,7 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
+import org.asynchttpclient.Response;
 import org.asynchttpclient.filter.FilterContext;
 import org.asynchttpclient.filter.RequestFilter;
 
@@ -25,8 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -39,6 +40,7 @@ public class MessagingClient {
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     private static String BASE_URL = "https://messaging.bandwidth.com/api/v2";
     private static String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
+    private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private static final Realm blankRealm = new Realm.Builder("", "")
             .setUsePreemptiveAuth(false)
@@ -186,8 +188,7 @@ public class MessagingClient {
                     .toCompletableFuture()
                     .thenApply((resp) -> {
                         throwIfApiError(resp);
-                        String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
-                        return messageSerde.deserialize(responseBodyString, Message.class);
+                        return messageSerde.deserialize(resp, Message.class);
                     });
         });
 
@@ -317,16 +318,23 @@ public class MessagingClient {
      */
     public CompletableFuture<List<Media>> listMediaAsync() {
         String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
-        return catchAsyncClientExceptions(() ->
-                httpClient.prepareGet(url)
-                        .execute()
-                        .toCompletableFuture()
-                        .thenApply((resp) -> {
-                            throwIfApiError(resp);
-                            String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
-                            return messageSerde.deserialize(responseBodyString, new TypeReference<List<Media>>(){});
-                        })
-        );
+        return CompletableFuture.supplyAsync(() -> {
+            List<Media> media = new ArrayList<>();
+            String continuationToken = "";
+            BoundRequestBuilder request = httpClient.prepareGet(url);
+            while (continuationToken != null) {
+                if (!continuationToken.isEmpty()) {
+                    request.setHeader(CONTINUATION_HEADER, continuationToken);
+                }
+
+                Response resp = catchClientExceptions(() -> request.execute().get());
+                throwIfApiError(resp);
+                media.addAll(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {
+                }));
+                continuationToken = resp.getHeader(CONTINUATION_HEADER);
+            }
+            return media;
+        });
     }
 
     /**
