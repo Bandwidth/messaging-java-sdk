@@ -314,7 +314,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains a ListMediaResponse.
      */
     public CompletableFuture<ListMediaResponse> listMediaAsync() {
-        return listMediaAsync("");
+        return listMediaAsync(null);
     }
 
     /**
