@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MessagingClientTest {
     private final String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
+    private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private final AsyncHttpClient mockClient = mock(AsyncHttpClient.class);
     private final BoundRequestBuilder boundRequestBuilder = mock(BoundRequestBuilder.class);
@@ -168,9 +169,24 @@ public class MessagingClientTest {
         when(listenableFuture.get()).thenReturn(response);
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMediaList));
         when(response.getStatusCode()).thenReturn(200);
+        when(response.getHeader(CONTINUATION_HEADER)).thenReturn(null);
 
         List<Media> media = client.listMedia();
-        assertThat(media.size()).isEqualTo(2);
+        assertThat(media.size()).isEqualTo(returnMediaList.size());
+    }
+
+    @Test
+    public void testListMediaContinuation() throws InterruptedException, ExecutionException {
+        when(mockClient.prepareGet(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(listenableFuture.get()).thenReturn(response);
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMediaList));
+        when(response.getStatusCode()).thenReturn(200);
+        when(response.getHeader(CONTINUATION_HEADER)).thenReturn("TokenABC", null);
+
+        List<Media> media = client.listMedia();
+        assertThat(media.size()).isEqualTo(returnMediaList.size() * 2);
     }
 
     @Test
