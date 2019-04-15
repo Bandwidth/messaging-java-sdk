@@ -6,6 +6,8 @@ import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.th
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import com.bandwidth.sdk.messaging.models.ImmutableListMediaResponse;
+import com.bandwidth.sdk.messaging.models.ListMediaResponse;
 import com.bandwidth.sdk.messaging.models.Media;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
@@ -27,9 +29,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -290,33 +292,52 @@ public class MessagingClient {
     /**
      * Lists MMS media content.
      *
-     * @return A list of URLs to stored media.
+     * @return A ListMediaResponse.
      */
-    public List<Media> listMedia() {
+    public ListMediaResponse listMedia() {
         return listMediaAsync().join();
     }
 
     /**
      * Lists MMS media content.
      *
-     * @return CompletableFuture that contains a list of URLs to stored media.
+     * @param continuationToken Pass in the continuation token to retrieve additional results.
+     * @return A ListMediaResponse.
      */
-    public CompletableFuture<List<Media>> listMediaAsync() {
+    public ListMediaResponse listMedia(String continuationToken) {
+        return listMediaAsync(continuationToken).join();
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @return CompletableFuture that contains a ListMediaResponse.
+     */
+    public CompletableFuture<ListMediaResponse> listMediaAsync() {
+        return listMediaAsync("");
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @param continuationToken Pass in the continuation token to retrieve additional results.
+     * @return CompletableFuture that contains a ListMediaResponse.
+     */
+    public CompletableFuture<ListMediaResponse> listMediaAsync(final String continuationToken) {
         String url = MessageFormat.format("{0}/users/{1}/media", BASE_URL, userId);
         return CompletableFuture.supplyAsync(() -> {
-            List<Media> media = new ArrayList<>();
-            String continuationToken = "";
             BoundRequestBuilder request = httpClient.prepareGet(url);
-            while (continuationToken != null) {
-                if (!continuationToken.isEmpty()) {
-                    request.setHeader(CONTINUATION_HEADER, continuationToken);
-                }
-                Response resp = catchClientExceptions(() -> request.execute().get());
-                throwIfApiError(resp);
-                media.addAll(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {}));
-                continuationToken = resp.getHeader(CONTINUATION_HEADER);
+            if (continuationToken != null && !continuationToken.isEmpty()) {
+                request.setHeader(CONTINUATION_HEADER, continuationToken);
             }
-            return media;
+            Response resp = catchClientExceptions(() -> request.execute().get());
+            throwIfApiError(resp);
+            ListMediaResponse mediaResponse = ImmutableListMediaResponse.builder()
+                    .client(this)
+                    .media(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {}))
+                    .continuationToken(Optional.ofNullable(resp.getHeader(CONTINUATION_HEADER)))
+                    .build();
+            return mediaResponse;
         });
     }
 

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.bandwidth.sdk.messaging.models.ImmutableMedia;
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
+import com.bandwidth.sdk.messaging.models.ListMediaResponse;
 import com.bandwidth.sdk.messaging.models.Media;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
@@ -171,8 +172,8 @@ public class MessagingClientTest {
         when(response.getStatusCode()).thenReturn(200);
         when(response.getHeader(CONTINUATION_HEADER)).thenReturn(null);
 
-        List<Media> media = client.listMedia();
-        assertThat(media.size()).isEqualTo(returnMediaList.size());
+        ListMediaResponse media = client.listMedia();
+        assertThat(media.getMedia().size()).isEqualTo(returnMediaList.size());
     }
 
     @Test
@@ -185,8 +186,8 @@ public class MessagingClientTest {
         when(response.getStatusCode()).thenReturn(200);
         when(response.getHeader(CONTINUATION_HEADER)).thenReturn("TokenABC", null);
 
-        List<Media> media = client.listMedia();
-        assertThat(media.size()).isEqualTo(returnMediaList.size() * 2);
+        ListMediaResponse media = client.listMedia();
+        assertThat(media.getMedia().size()).isEqualTo(returnMediaList.size());
     }
 
     @Test
