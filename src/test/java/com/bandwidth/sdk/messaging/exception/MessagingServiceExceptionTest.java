@@ -1,11 +1,13 @@
 package com.bandwidth.sdk.messaging.exception;
 
-import org.asynchttpclient.Response;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.asynchttpclient.Response;
+import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
 
 public class MessagingServiceExceptionTest {
 
@@ -28,7 +30,7 @@ public class MessagingServiceExceptionTest {
     @Test
     public void testErrorResponse() {
         when(response.getStatusCode()).thenReturn(400);
-        when(response.getResponseBody()).thenReturn(ERROR_RESPONSE);
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(ERROR_RESPONSE);
         assertThatExceptionOfType(MessagingServiceException.class)
                 .isThrownBy(() -> MessagingServiceException.throwIfApiError(response));
     }
@@ -36,7 +38,7 @@ public class MessagingServiceExceptionTest {
     @Test
     public void testErrorParsingResponse() {
         when(response.getStatusCode()).thenReturn(400);
-        when(response.getResponseBody()).thenReturn("definitely {}not [valid JSON]");
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn("definitely {}not [valid JSON]");
         assertThatExceptionOfType(MessagingClientException.class)
                 .isThrownBy(() -> MessagingServiceException.throwIfApiError(response));
     }

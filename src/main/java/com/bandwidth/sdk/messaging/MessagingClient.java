@@ -3,11 +3,16 @@ package com.bandwidth.sdk.messaging;
 import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchAsyncClientExceptions;
 import static com.bandwidth.sdk.messaging.exception.ExceptionUtils.catchClientExceptions;
 import static com.bandwidth.sdk.messaging.exception.MessagingServiceException.throwIfApiError;
+
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import com.bandwidth.sdk.messaging.models.ImmutableListMediaResponse;
+import com.bandwidth.sdk.messaging.models.ListMediaResponse;
+import com.bandwidth.sdk.messaging.models.Media;
 import com.bandwidth.sdk.messaging.models.Message;
 import com.bandwidth.sdk.messaging.models.SendMessageRequest;
 import com.bandwidth.sdk.messaging.serde.MessageSerde;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.apache.commons.io.IOUtils;
 import org.asynchttpclient.AsyncHttpClient;
@@ -15,6 +20,7 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Realm;
+import org.asynchttpclient.Response;
 import org.asynchttpclient.filter.FilterContext;
 import org.asynchttpclient.filter.RequestFilter;
 
@@ -22,9 +28,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -33,8 +40,8 @@ import io.netty.handler.codec.http.HttpHeaders;
 public class MessagingClient {
     private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
-    private static String BASE_URL = "https://api.catapult.inetwork.com/v2";
-    private static String MEDIA_URL = "https://api.catapult.inetwork.com/v1";
+    private static String BASE_URL = "https://messaging.bandwidth.com/api/v2";
+    private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private static final Realm blankRealm = new Realm.Builder("", "")
             .setUsePreemptiveAuth(false)
@@ -71,7 +78,6 @@ public class MessagingClient {
         private String token;
         private String secret;
         private String baseUrl;
-        private String mediaUrl;
         private AsyncHttpClientConfig config;
 
         private Builder() {
@@ -119,16 +125,6 @@ public class MessagingClient {
             return this;
         }
 
-
-        /**
-         * Optional. Specify the trusted media server.
-         * Note that credentials specified in client will be sent to this server.
-         */
-        public Builder mediaUrl(String mediaUrl) {
-            this.mediaUrl = mediaUrl;
-            return this;
-        }
-
         public MessagingClient build() {
             Objects.requireNonNull(userId, "A user id must be provided.");
             Objects.requireNonNull(token, "A token must be provided.");
@@ -141,18 +137,15 @@ public class MessagingClient {
                     .addRequestFilter(USER_AGENT_FILTER)
                     .build();
 
-            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl, mediaUrl);
+            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl);
         }
     }
 
-    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl, String mediaUrl) {
+    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
         if (baseUrl != null) {
             this.BASE_URL = baseUrl;
-        }
-        if (mediaUrl != null) {
-            this.MEDIA_URL = mediaUrl;
         }
     }
 
@@ -182,8 +175,7 @@ public class MessagingClient {
                     .toCompletableFuture()
                     .thenApply((resp) -> {
                         throwIfApiError(resp);
-                        String responseBodyString = resp.getResponseBody(StandardCharsets.UTF_8);
-                        return messageSerde.deserialize(responseBodyString, Message.class);
+                        return messageSerde.deserialize(resp, Message.class);
                     });
         });
 
@@ -234,7 +226,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
                         .setBody(byteArray)
@@ -242,7 +234,7 @@ public class MessagingClient {
                         .toCompletableFuture()
                         .thenApply((resp) -> {
                             throwIfApiError(resp);
-                            return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
                         })
         );
     }
@@ -257,7 +249,7 @@ public class MessagingClient {
         return catchAsyncClientExceptions(() -> {
             BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
             // Remove credentials if the media is not hosted by Bandwidth
-            if (!mediaUrl.startsWith(MEDIA_URL)) {
+            if (!mediaUrl.startsWith(BASE_URL)) {
                 building.setRealm(blankRealm);
             }
             return building.execute()
@@ -295,5 +287,86 @@ public class MessagingClient {
             }
             return (Void) null;
         });
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @return A ListMediaResponse.
+     */
+    public ListMediaResponse listMedia() {
+        return listMediaAsync().join();
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @param continuationToken Pass in the continuation token to retrieve additional results.
+     * @return A ListMediaResponse.
+     */
+    public ListMediaResponse listMedia(String continuationToken) {
+        return listMediaAsync(continuationToken).join();
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @return CompletableFuture that contains a ListMediaResponse.
+     */
+    public CompletableFuture<ListMediaResponse> listMediaAsync() {
+        return listMediaAsync(null);
+    }
+
+    /**
+     * Lists MMS media content.
+     *
+     * @param continuationToken Pass in the continuation token to retrieve additional results.
+     * @return CompletableFuture that contains a ListMediaResponse.
+     */
+    public CompletableFuture<ListMediaResponse> listMediaAsync(final String continuationToken) {
+        String url = MessageFormat.format("{0}/users/{1}/media", BASE_URL, userId);
+        return CompletableFuture.supplyAsync(() -> {
+            BoundRequestBuilder request = httpClient.prepareGet(url);
+            if (continuationToken != null && !continuationToken.isEmpty()) {
+                request.setHeader(CONTINUATION_HEADER, continuationToken);
+            }
+            Response resp = catchClientExceptions(() -> request.execute().get());
+            throwIfApiError(resp);
+            ListMediaResponse mediaResponse = ImmutableListMediaResponse.builder()
+                    .client(this)
+                    .media(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {}))
+                    .continuationToken(Optional.ofNullable(resp.getHeader(CONTINUATION_HEADER)))
+                    .build();
+            return mediaResponse;
+        });
+    }
+
+    /**
+     * Deletes MMS media content.
+     *
+     * @param fileName  File name as you would like it to be deleted
+     * @return URL that can be sent in an MMS
+     */
+    public void deleteMedia(String fileName) {
+        deleteMediaAsync(fileName).join();
+    }
+
+    /**
+     * Deletes MMS media content.
+     *
+     * @param fileName  File name as you would like it to be uploaded
+     * @return CompletableFuture that contains URL that can be sent in an MMS
+     */
+    public CompletableFuture deleteMediaAsync(String fileName) {
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+        return catchAsyncClientExceptions(() ->
+                httpClient.prepareDelete(url)
+                        .execute()
+                        .toCompletableFuture()
+                        .thenApply((resp) -> {
+                            throwIfApiError(resp);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+                        })
+        );
     }
 }
