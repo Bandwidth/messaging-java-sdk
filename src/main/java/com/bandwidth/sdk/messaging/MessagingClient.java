@@ -39,7 +39,6 @@ public class MessagingClient {
     private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     private static String BASE_URL = "https://messaging.bandwidth.com/api/v2";
-    private static String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
     private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private static final Realm blankRealm = new Realm.Builder("", "")
@@ -77,7 +76,6 @@ public class MessagingClient {
         private String token;
         private String secret;
         private String baseUrl;
-        private String mediaUrl;
         private AsyncHttpClientConfig config;
 
         private Builder() {
@@ -125,16 +123,6 @@ public class MessagingClient {
             return this;
         }
 
-
-        /**
-         * Optional. Specify the trusted media server.
-         * Note that credentials specified in client will be sent to this server.
-         */
-        public Builder mediaUrl(String mediaUrl) {
-            this.mediaUrl = mediaUrl;
-            return this;
-        }
-
         public MessagingClient build() {
             Objects.requireNonNull(userId, "A user id must be provided.");
             Objects.requireNonNull(token, "A token must be provided.");
@@ -147,18 +135,15 @@ public class MessagingClient {
                     .addRequestFilter(USER_AGENT_FILTER)
                     .build();
 
-            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl, mediaUrl);
+            return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl);
         }
     }
 
-    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl, String mediaUrl) {
+    MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
         if (baseUrl != null) {
             this.BASE_URL = baseUrl;
-        }
-        if (mediaUrl != null) {
-            this.MEDIA_URL = mediaUrl;
         }
     }
 
@@ -239,7 +224,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
                         .setBody(byteArray)
@@ -247,7 +232,7 @@ public class MessagingClient {
                         .toCompletableFuture()
                         .thenApply((resp) -> {
                             throwIfApiError(resp);
-                            return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
                         })
         );
     }
@@ -262,7 +247,7 @@ public class MessagingClient {
         return catchAsyncClientExceptions(() -> {
             BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
             // Remove credentials if the media is not hosted by Bandwidth
-            if (!mediaUrl.startsWith(MEDIA_URL)) {
+            if (!mediaUrl.startsWith(BASE_URL)) {
                 building.setRealm(blankRealm);
             }
             return building.execute()
@@ -305,7 +290,7 @@ public class MessagingClient {
     /**
      * Lists MMS media content.
      *
-     * @return URL that can be sent in an MMS
+     * @return A list of URLs to stored media.
      */
     public List<Media> listMedia() {
         return listMediaAsync().join();
@@ -314,10 +299,10 @@ public class MessagingClient {
     /**
      * Lists MMS media content.
      *
-     * @return CompletableFuture that contains URL that can be sent in an MMS
+     * @return CompletableFuture that contains a list of URLs to stored media.
      */
     public CompletableFuture<List<Media>> listMediaAsync() {
-        String url = MessageFormat.format("{0}/users/{1}/media", MEDIA_URL, userId);
+        String url = MessageFormat.format("{0}/users/{1}/media", BASE_URL, userId);
         return CompletableFuture.supplyAsync(() -> {
             List<Media> media = new ArrayList<>();
             String continuationToken = "";
@@ -352,14 +337,14 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture deleteMediaAsync(String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.prepareDelete(url)
                         .execute()
                         .toCompletableFuture()
                         .thenApply((resp) -> {
                             throwIfApiError(resp);
-                            return MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, fileName);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
                         })
         );
     }

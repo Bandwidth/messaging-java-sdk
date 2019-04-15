@@ -30,7 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class MessagingClientTest {
-    private final String MEDIA_URL = "https://messaging.bandwidth.com/api/v2";
+    private final String BASE_URL = "https://messaging.bandwidth.com/api/v2";
     private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private final AsyncHttpClient mockClient = mock(AsyncHttpClient.class);
@@ -40,7 +40,7 @@ public class MessagingClientTest {
 
     private final String userId = "u-abcde123456";
 
-    private final MessagingClient client = new MessagingClient(userId, mockClient, null, null);
+    private final MessagingClient client = new MessagingClient(userId, mockClient, null);
 
     private final MessageSerde messageSerde = new MessageSerde();
 
@@ -158,7 +158,7 @@ public class MessagingClientTest {
         when(response.getStatusCode()).thenReturn(200);
 
         String testUrl = client.uploadMedia("./.tmp","fileName.txt");
-        assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", MEDIA_URL, userId, "fileName.txt"));
+        assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, "fileName.txt"));
     }
 
     @Test
