@@ -326,11 +326,9 @@ public class MessagingClient {
                 if (!continuationToken.isEmpty()) {
                     request.setHeader(CONTINUATION_HEADER, continuationToken);
                 }
-
                 Response resp = catchClientExceptions(() -> request.execute().get());
                 throwIfApiError(resp);
-                media.addAll(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {
-                }));
+                media.addAll(messageSerde.deserialize(resp, new TypeReference<List<Media>>() {}));
                 continuationToken = resp.getHeader(CONTINUATION_HEADER);
             }
             return media;
