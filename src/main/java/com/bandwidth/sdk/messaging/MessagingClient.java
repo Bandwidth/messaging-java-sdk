@@ -345,7 +345,6 @@ public class MessagingClient {
      * Deletes MMS media content.
      *
      * @param fileName  File name as you would like it to be deleted
-     * @return URL that can be sent in an MMS
      */
     public void deleteMedia(String fileName) {
         deleteMediaAsync(fileName).join();
