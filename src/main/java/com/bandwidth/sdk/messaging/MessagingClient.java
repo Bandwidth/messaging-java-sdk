@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
@@ -367,5 +368,9 @@ public class MessagingClient {
                             return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
                         })
         );
+    }
+
+    public void close() throws IOException {
+        this.httpClient.close();
     }
 }
