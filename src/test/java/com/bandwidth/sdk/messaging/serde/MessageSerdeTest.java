@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
 import com.bandwidth.sdk.messaging.models.Message;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,6 +34,19 @@ public class MessageSerdeTest {
     public void testMessageSerde() throws IOException {
         String test = serde.serialize(message);
         Message deserialized = serde.deserialize(test, Message.class);
+        assertThat(deserialized).isEqualTo(message);
+    }
+
+    @Test
+    public void shouldIgnoreUnknownFields() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String value = serde.serialize(message);
+
+        String valueWithUnexpected = objectMapper.readValue(value, ObjectNode.class)
+                .put("unexpectedValue", "true")
+                .toString();
+
+        Message deserialized = serde.deserialize(valueWithUnexpected, Message.class);
         assertThat(deserialized).isEqualTo(message);
     }
 }
