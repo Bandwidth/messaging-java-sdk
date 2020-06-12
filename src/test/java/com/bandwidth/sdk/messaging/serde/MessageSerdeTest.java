@@ -45,7 +45,6 @@ public class MessageSerdeTest {
         String valueWithUnexpected = objectMapper.readValue(value, ObjectNode.class)
                 .put("unexpectedValue", "true")
                 .toString();
-        System.out.println(valueWithUnexpected);
 
         Message deserialized = serde.deserialize(valueWithUnexpected, Message.class);
         assertThat(deserialized).isEqualTo(message);
