@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.bandwidth.sdk.messaging.models.ImmutableMedia;
 import com.bandwidth.sdk.messaging.models.ImmutableMessage;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.mockito.internal.matchers.StartsWith;
 
 public class MessagingClientTest {
     private final String BASE_URL = "https://messaging.bandwidth.com/api/v2";
@@ -199,5 +199,22 @@ public class MessagingClientTest {
         when(response.getStatusCode()).thenReturn(200);
 
         client.deleteMedia("image.jpg");
+    }
+
+    @Test
+    public void testMultipleClientsWithDifferentBaseUrls() {
+        String mockUrl = "https://fake.bandwidth.com";
+        MessagingClient client2 = new MessagingClient(userId, mockClient, mockUrl);
+        when(mockClient.preparePost(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
+        when(response.getStatusCode()).thenReturn(200);
+        assertThat(returnMessage).isEqualTo(client.sendMessage(smr));
+        verify(mockClient, never()).preparePost(argThat(new StartsWith(mockUrl)));
+        assertThat(returnMessage).isEqualTo(client2.sendMessage(smr));
+        verify(mockClient).preparePost(argThat(new StartsWith(mockUrl)));
     }
 }

@@ -39,10 +39,10 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 
 public class MessagingClient {
-    private static String CONTENT_TYPE_HEADER_NAME = "Content-Type";
-    private static String CONTENT_TYPE_APPLICATION_JSON = "application/json";
-    private static String BASE_URL = "https://messaging.bandwidth.com/api/v2";
-    private static String CONTINUATION_HEADER = "Continuation-Token";
+    private static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";
+    private static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+    private static final String CONTINUATION_HEADER = "Continuation-Token";
+    private static final String DEFAULT_BASE_URL = "https://messaging.bandwidth.com/api/v2";
 
     private static final Realm blankRealm = new Realm.Builder("", "")
             .setUsePreemptiveAuth(false)
@@ -50,6 +50,7 @@ public class MessagingClient {
             .build();
 
     private final String userId;
+    private final String baseUrl;
     private final AsyncHttpClient httpClient;
     private final MessageSerde messageSerde = new MessageSerde();
 
@@ -145,9 +146,7 @@ public class MessagingClient {
     MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
-        if (baseUrl != null) {
-            this.BASE_URL = baseUrl;
-        }
+        this.baseUrl = baseUrl != null ? baseUrl : DEFAULT_BASE_URL;
     }
 
     /**
@@ -168,7 +167,7 @@ public class MessagingClient {
      */
     public CompletableFuture<Message> sendMessageAsync(SendMessageRequest request) {
         return catchAsyncClientExceptions(() -> {
-            String url = MessageFormat.format("{0}/users/{1}/messages", BASE_URL, userId);
+            String url = MessageFormat.format("{0}/users/{1}/messages", baseUrl, userId);
             return httpClient.preparePost(url)
                     .setHeader(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON)
                     .setBody(messageSerde.serialize(request))
@@ -227,7 +226,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", baseUrl, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
                         .setBody(byteArray)
@@ -235,7 +234,7 @@ public class MessagingClient {
                         .toCompletableFuture()
                         .thenApply((resp) -> {
                             throwIfApiError(resp);
-                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", baseUrl, userId, fileName);
                         })
         );
     }
@@ -250,7 +249,7 @@ public class MessagingClient {
         return catchAsyncClientExceptions(() -> {
             BoundRequestBuilder building = httpClient.prepareGet(mediaUrl);
             // Remove credentials if the media is not hosted by Bandwidth
-            if (!mediaUrl.startsWith(BASE_URL)) {
+            if (!mediaUrl.startsWith(baseUrl)) {
                 building.setRealm(blankRealm);
             }
             return building.execute()
@@ -325,7 +324,7 @@ public class MessagingClient {
      * @return CompletableFuture that contains a ListMediaResponse.
      */
     public CompletableFuture<ListMediaResponse> listMediaAsync(final String continuationToken) {
-        String url = MessageFormat.format("{0}/users/{1}/media", BASE_URL, userId);
+        String url = MessageFormat.format("{0}/users/{1}/media", baseUrl, userId);
         return CompletableFuture.supplyAsync(() -> {
             BoundRequestBuilder request = httpClient.prepareGet(url);
             if (continuationToken != null && !continuationToken.isEmpty()) {
@@ -358,14 +357,14 @@ public class MessagingClient {
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
     public CompletableFuture deleteMediaAsync(String fileName) {
-        String url = MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+        String url = MessageFormat.format("{0}/users/{1}/media/{2}", baseUrl, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.prepareDelete(url)
                         .execute()
                         .toCompletableFuture()
                         .thenApply((resp) -> {
                             throwIfApiError(resp);
-                            return MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, fileName);
+                            return MessageFormat.format("{0}/users/{1}/media/{2}", baseUrl, userId, fileName);
                         })
         );
     }
