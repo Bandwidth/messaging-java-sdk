@@ -146,11 +146,7 @@ public class MessagingClient {
     MessagingClient(String userId, AsyncHttpClient httpClient, String baseUrl) {
         this.userId = userId;
         this.httpClient = httpClient;
-        if (baseUrl != null) {
-            this.baseUrl = baseUrl;
-        } else {
-            this.baseUrl = DEFAULT_BASE_URL;
-        }
+        this.baseUrl = baseUrl != null ? baseUrl : DEFAULT_BASE_URL;
     }
 
     /**
