@@ -1,0 +1,6 @@
+# action.yml
+name: 'Deploy'
+description: 'Deploys the sdk via gradle'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

@@ -1,0 +1,6 @@
+# action.yml
+name: 'GpgSetup'
+description: 'Sets up the gpg config for the gradle deploy'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
