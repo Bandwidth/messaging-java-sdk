@@ -31,8 +31,4 @@ public class MessagingClientException extends RuntimeException {
     public Optional<Integer> getStatusCode() {
         return statusCode;
     }
-
-    public static void main(String[] args) {
-
-    }
 }
