@@ -19,12 +19,13 @@ public class MessagingServiceException extends RuntimeException {
     }
 
     public static void throwIfApiError(Response apiResponse) {
-        if (!isSuccessfulHttpStatusCode(apiResponse.getStatusCode())) {
+        int statusCode = apiResponse.getStatusCode();
+        if (!isSuccessfulHttpStatusCode(statusCode)) {
             MessageApiError apiError;
             try {
                 apiError = new MessageSerde().deserialize(apiResponse, MessageApiError.class);
             } catch (Exception e) {
-                throw new MessagingClientException("Unknown error response from API: " + apiResponse);
+                throw new MessagingClientException("Unknown error response from API: " + apiResponse, statusCode);
             }
             throw new MessagingServiceException(apiError);
         }
