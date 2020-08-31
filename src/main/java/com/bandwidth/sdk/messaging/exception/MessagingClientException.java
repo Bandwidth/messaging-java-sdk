@@ -20,7 +20,9 @@ public class MessagingClientException extends RuntimeException {
 
     public MessagingClientException(String message, Throwable cause) {
         super(message, cause);
-        statusCode = Optional.empty();
+        statusCode = Optional.of(cause)
+                .filter(throwable -> throwable instanceof MessagingClientException)
+                .flatMap(throwable -> ((MessagingClientException) throwable).getStatusCode());
     }
 
     MessagingClientException(String message, int statusCode) {
