@@ -3,9 +3,7 @@
 [![MIT license](https://img.shields.io/crates/l/pubsub.svg)](./LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/com.bandwidth.sdk/messaging.svg)](https://search.maven.org/search?q=g:com.bandwidth.sdk.messaging)
 
-Java SDK for [Bandwidth's V2 Messaging Platform](https://dev.bandwidth.com/v2-messaging/)
-
-[Javadoc API Documentation](https://dev.bandwidth.com/messaging-java-sdk/)
+Java SDK for [Bandwidth's V2 Messaging Platform](https://dev.bandwidth.com/messaging/about.html)
 
 ## Dependency
 
@@ -25,8 +23,7 @@ compile 'com.bandwidth.sdk:messaging:(put desired version here)'
 
 ## Quick Start
 ### Important Links
-* [Bandwidth Dashboard](https://dashboard.bandwidth.com/portal/report/#login:)
-* [Bandwidth Application](https://app.bandwidth.com/login)
+* [Bandwidth Dashboard](https://dashboard.bandwidth.com/)
 * [Bandwidth Developer Homepage](https://dev.bandwidth.com/)
 
 ```java
