@@ -154,10 +154,9 @@ public class MessagingClientTest {
         when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
-        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(
-                returnMessageWithOptionalFields));
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
         when(response.getStatusCode()).thenReturn(200);
-        assertThat(returnMessageWithOptionalFields).isEqualTo(client.sendMessage(request));
+        assertThat(returnMessage).isEqualTo(client.sendMessage(request));
     }
 
     @Test
@@ -249,12 +248,11 @@ public class MessagingClientTest {
         when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
         when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
-        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(
-                returnMessageWithOptionalFields));
+        when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
         when(response.getStatusCode()).thenReturn(200);
-        assertThat(returnMessageWithOptionalFields).isEqualTo(client.sendMessage(request));
+        assertThat(returnMessage).isEqualTo(client.sendMessage(request));
         verify(mockClient, never()).preparePost(argThat(new StartsWith(mockUrl)));
-        assertThat(returnMessageWithOptionalFields).isEqualTo(client2.sendMessage(request));
+        assertThat(returnMessage).isEqualTo(client2.sendMessage(request));
         verify(mockClient).preparePost(argThat(new StartsWith(mockUrl)));
     }
 }
