@@ -3,13 +3,11 @@ package com.bandwidth.sdk.messaging.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.immutables.value.Value.Immutable;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.immutables.value.Value.Immutable;
 
 @Immutable
 @JsonSerialize(as = ImmutableMessage.class)
@@ -26,10 +24,12 @@ public abstract class Message {
     public abstract Optional<String> getTag();
     public abstract String getDirection();
     public abstract Integer getSegmentCount();
+    public abstract Optional<String> getPriority();
+    public abstract Optional<String> getExpiration();
 
     @JsonIgnore
     public boolean isSms(){
-        return getTo().size() == 1 && !getMedia().isPresent();
+        return getTo().size() == 1 && (!getMedia().isPresent() || getMedia().get().isEmpty());
     }
 
     @JsonIgnore

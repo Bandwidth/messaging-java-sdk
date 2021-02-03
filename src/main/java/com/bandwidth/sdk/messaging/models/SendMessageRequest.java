@@ -25,6 +25,10 @@ public abstract class SendMessageRequest {
 
     public abstract List<String> getMedia();
 
+    public abstract Optional<String> getPriority();
+
+    public abstract Optional<String> getExpiration();
+
     public static ImmutableSendMessageRequest.Builder builder() {
         return ImmutableSendMessageRequest.builder();
     }
