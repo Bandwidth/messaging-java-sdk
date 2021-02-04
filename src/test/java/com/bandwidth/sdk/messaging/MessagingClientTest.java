@@ -45,19 +45,28 @@ public class MessagingClientTest {
 
     private final MessageSerde messageSerde = new MessageSerde();
 
-    private final SendMessageRequest smr = SendMessageRequest.builder()
+    private final SendMessageRequest request = SendMessageRequest.builder()
             .addTo("1")
             .from("2")
-            .tag("test tag")
             .text("test message")
             .addMedia("http://example.com/my.jpg")
             .applicationId("a-abcde123456")
             .build();
 
+    private final SendMessageRequest requestWithOptionalFields = SendMessageRequest.builder()
+            .addTo("1")
+            .from("2")
+            .text("test message")
+            .addMedia("http://example.com/my.jpg")
+            .applicationId("a-abcde123456")
+            .tag("test tag")
+            .priority("default")
+            .expiration("2040-12-01T00:00:00Z")
+            .build();
+
     private final Message returnMessage = ImmutableMessage.builder()
             .addTo("1")
             .from("2")
-            .tag("test tag")
             .text("test message")
             .media(Arrays.asList("http://example.com/my.jpg"))
             .applicationId("a-abcde123456")
@@ -66,6 +75,22 @@ public class MessagingClientTest {
             .owner("2")
             .segmentCount(1)
             .time("timestamp")
+            .build();
+
+    private final Message returnMessageWithOptionalFields = ImmutableMessage.builder()
+            .addTo("1")
+            .from("2")
+            .text("test message")
+            .media(Arrays.asList("http://example.com/my.jpg"))
+            .applicationId("a-abcde123456")
+            .direction("out")
+            .id("abcde123456")
+            .owner("2")
+            .segmentCount(1)
+            .time("timestamp")
+            .tag("test tag")
+            .priority("default")
+            .expiration("2040-12-01T00:00:00Z")
             .build();
 
     private final Media returnMedia1 = ImmutableMedia.builder()
@@ -131,7 +156,20 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
         when(response.getStatusCode()).thenReturn(200);
-        assertThat(returnMessage).isEqualTo(client.sendMessage(smr));
+        assertThat(returnMessage).isEqualTo(client.sendMessage(request));
+    }
+
+    @Test
+    public void testMessagingClientOptionalFields() {
+        when(mockClient.preparePost(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setHeader(anyString(), anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.setBody(anyString())).thenReturn(boundRequestBuilder);
+        when(boundRequestBuilder.execute()).thenReturn(listenableFuture);
+        when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
+        when(response.getResponseBody(StandardCharsets.UTF_8))
+                .thenReturn(messageSerde.serialize(returnMessageWithOptionalFields));
+        when(response.getStatusCode()).thenReturn(200);
+        assertThat(returnMessageWithOptionalFields).isEqualTo(client.sendMessage(requestWithOptionalFields));
     }
 
     @Test
@@ -212,9 +250,9 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getResponseBody(StandardCharsets.UTF_8)).thenReturn(messageSerde.serialize(returnMessage));
         when(response.getStatusCode()).thenReturn(200);
-        assertThat(returnMessage).isEqualTo(client.sendMessage(smr));
+        assertThat(returnMessage).isEqualTo(client.sendMessage(request));
         verify(mockClient, never()).preparePost(argThat(new StartsWith(mockUrl)));
-        assertThat(returnMessage).isEqualTo(client2.sendMessage(smr));
+        assertThat(returnMessage).isEqualTo(client2.sendMessage(request));
         verify(mockClient).preparePost(argThat(new StartsWith(mockUrl)));
     }
 }
