@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.bandwidth.sdk.messaging"},{"l":"com.bandwidth.sdk.messaging.exception"},{"l":"com.bandwidth.sdk.messaging.models"},{"l":"com.bandwidth.sdk.messaging.serde"}]
