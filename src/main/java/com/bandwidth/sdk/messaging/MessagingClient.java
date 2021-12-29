@@ -74,6 +74,18 @@ public class MessagingClient {
             }
         };
 
+        private static final RequestFilter CONTENT_TYPE_FILTER = new RequestFilter() {
+            @Override
+            public <T> FilterContext<T> filter(FilterContext<T> ctx) {
+                HttpHeaders headers = ctx.getRequest().getHeaders();
+                String contentType = headers.get(CONTENT_TYPE_HEADER_NAME);
+                if (!contentType) {
+                    headers.add(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON);
+                }
+                return ctx;
+            }
+        };
+
         private static final DefaultAsyncHttpClientConfig DEFAULT_CONFIG = new DefaultAsyncHttpClientConfig.Builder().build();
 
         private String userId;
@@ -137,6 +149,7 @@ public class MessagingClient {
                             .setUsePreemptiveAuth(true)
                             .setScheme(Realm.AuthScheme.BASIC))
                     .addRequestFilter(USER_AGENT_FILTER)
+                    .addRequestFilter(CONTENT_TYPE_FILTER)
                     .build();
 
             return new MessagingClient(userId, asyncHttpClient(httpClientConfig), baseUrl);
@@ -169,7 +182,6 @@ public class MessagingClient {
         return catchAsyncClientExceptions(() -> {
             String url = MessageFormat.format("{0}/users/{1}/messages", baseUrl, userId);
             return httpClient.preparePost(url)
-                    .setHeader(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_APPLICATION_JSON)
                     .setBody(messageSerde.serialize(request))
                     .execute()
                     .toCompletableFuture()
