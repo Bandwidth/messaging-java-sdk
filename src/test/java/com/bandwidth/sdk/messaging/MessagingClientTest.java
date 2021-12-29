@@ -32,6 +32,7 @@ import org.mockito.internal.matchers.StartsWith;
 
 public class MessagingClientTest {
     private final String BASE_URL = "https://messaging.bandwidth.com/api/v2";
+    private final String CONTENT_TYPE_IMAGE_JPEG = "image/jpeg";
     private static String CONTINUATION_HEADER = "Continuation-Token";
 
     private final AsyncHttpClient mockClient = mock(AsyncHttpClient.class);
@@ -196,7 +197,7 @@ public class MessagingClientTest {
         when(listenableFuture.toCompletableFuture()).thenReturn(CompletableFuture.completedFuture(response));
         when(response.getStatusCode()).thenReturn(200);
 
-        String testUrl = client.uploadMedia("./.tmp","fileName.txt");
+        String testUrl = client.uploadMedia("./.tmp","fileName.txt", CONTENT_TYPE_IMAGE_JPEG);
         assertThat(testUrl).isEqualTo(MessageFormat.format("{0}/users/{1}/media/{2}", BASE_URL, userId, "fileName.txt"));
     }
 
