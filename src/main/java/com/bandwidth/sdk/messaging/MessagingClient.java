@@ -188,10 +188,10 @@ public class MessagingClient {
      * @param fileName File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(String path, String fileName) {
+    public String uploadMedia(String path, String fileName, String contentType) {
         return catchClientExceptions(() -> {
             try (FileInputStream stream = new FileInputStream(path)) {
-                return uploadMedia(stream, fileName);
+                return uploadMedia(stream, fileName, contentType);
             }
         });
     }
@@ -203,8 +203,8 @@ public class MessagingClient {
      * @param fileName File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(InputStream stream, String fileName) {
-        return catchClientExceptions(() -> uploadMedia(IOUtils.toByteArray(stream), fileName));
+    public String uploadMedia(InputStream stream, String fileName, String contentType) {
+        return catchClientExceptions(() -> uploadMedia(IOUtils.toByteArray(stream), fileName, contentType));
     }
 
     /**
@@ -214,8 +214,8 @@ public class MessagingClient {
      * @param fileName  File name as you would like it to be uploaded
      * @return URL that can be sent in an MMS
      */
-    public String uploadMedia(byte[] byteArray, String fileName) {
-        return uploadMediaAsync(byteArray, fileName).join();
+    public String uploadMedia(byte[] byteArray, String fileName, String contentType) {
+        return uploadMediaAsync(byteArray, fileName, contentType).join();
     }
 
     /**
@@ -225,10 +225,11 @@ public class MessagingClient {
      * @param fileName  File name as you would like it to be uploaded
      * @return CompletableFuture that contains URL that can be sent in an MMS
      */
-    public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName) {
+    public CompletableFuture<String> uploadMediaAsync(byte[] byteArray, String fileName, String contentType) {
         String url = MessageFormat.format("{0}/users/{1}/media/{2}", baseUrl, userId, fileName);
         return catchAsyncClientExceptions(() ->
                 httpClient.preparePut(url)
+                        .setHeader(CONTENT_TYPE_HEADER_NAME, contentType)
                         .setBody(byteArray)
                         .execute()
                         .toCompletableFuture()
